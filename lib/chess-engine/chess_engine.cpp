@@ -25,7 +25,7 @@ static Board board;
 static int8_t idx_white_king = 0;
 static int8_t idx_black_king = 0;
 
-static position_t pos[MAXDEPTH];
+static Position pos[MAXDEPTH];
 
 static bool   endgame = false;
 
@@ -411,7 +411,7 @@ ChessTask::retrieve_steps(int pos_idx)
 // ===== Chess Engine =====================================================
 
 void 
-ChessEngine::move_pos(int pos_idx, step_t & step)
+ChessEngine::move_pos(int pos_idx, Step & step)
 {
   pos[pos_idx + 1].white_castle_kingside_ok  = pos[pos_idx].white_castle_kingside_ok;
   pos[pos_idx + 1].white_castle_queenside_ok = pos[pos_idx].white_castle_queenside_ok;
@@ -498,7 +498,7 @@ ChessEngine::move_pos(int pos_idx, step_t & step)
 }
 
 void 
-ChessEngine::move_step(int pos_idx, step_t & step)
+ChessEngine::move_step(int pos_idx, Step & step)
 {
   //checks(l,s);
   board[step.c1] = 0;
@@ -583,7 +583,7 @@ ChessEngine::move_step(int pos_idx, step_t & step)
 }
 
 void 
-ChessEngine::back_step(int pos_idx, step_t & step)
+ChessEngine::back_step(int pos_idx, Step & step)
 {
   board[step.c1] = step.f1;
   board[step.c2] = step.f2;
@@ -812,11 +812,11 @@ ChessEngine::getbm(int move_idx, std::string ep)
           best_move[move_idx] = pos[0].steps[i];
           return;
         }
-        if (step_to_str(pos[0].steps[i]) == ep) {
+        if (Stepo_str(pos[0].steps[i]) == ep) {
           best_move[move_idx] = pos[0].steps[i];
         }
         else {
-          std::string st = step_to_str(pos[0].steps[i]);
+          std::string st = Stepo_str(pos[0].steps[i]);
           st = st.substr(0, 1) + st.substr(2);
           if ((pos[0].steps[i].f2 != NO_FIG) && (ep.at(1) == 'x') && (st == ep)) {
             best_move[move_idx] = pos[0].steps[i];
@@ -896,7 +896,7 @@ ChessEngine::checkd_b()
 void 
 ChessEngine::sort_steps(int pos_idx)
 {
-  step_t tmp;
+  Step tmp;
   for (int i = 0; i < pos[pos_idx].steps_count - 1; i++) {
     int maxweight = pos[pos_idx].steps[i].weight;
     int maxj      = i;
@@ -1073,7 +1073,7 @@ ChessEngine::generate_steps(int pos_idx)
     //if (action(pos[pos_idx].steps[i])) {
     //  pos[pos_idx].steps[i].weight=1;
     //  show_position();
-    //    Serial.println("="+step_to_str(pos[pos_idx].steps[i]));
+    //    Serial.println("="+Stepo_str(pos[pos_idx].steps[i]));
     //   delay(20000);
     //}
     //}
@@ -1169,7 +1169,7 @@ ChessEngine::is_draw()
 }
 
 int 
-active(step_t & step)  //
+active(Step & step)  //
 {
   int j;
   if (step.f2 != NO_FIG || step.type > MoveType::CASTLE_QUEENSIDE) return 1;
@@ -1355,13 +1355,13 @@ ChessEngine::alpha_beta(int pos_idx, int alpha, int beta, int depth_left)
 
     if (TRACE > 0) {
       if (pos_idx == 0) {
-        std::cout << step_to_str(pos[0].steps[i]) << "  " << i + 1 << '/' << pos[0].steps_count;
+        std::cout << Stepo_str(pos[0].steps[i]) << "  " << i + 1 << '/' << pos[0].steps_count;
         //if (pos[0].steps[i].weight<-9000) { Serial.println(F(" checkmate")); continue; }
       } 
       else if (TRACE > pos_idx) {
         std::cout << std::endl;
         for (int ll = 0; ll < pos_idx; ll++) std::cout << "      ";
-        std::cout << pos_idx + 1 << "- " << step_to_str(pos[pos_idx].steps[i]);
+        std::cout << pos_idx + 1 << "- " << Stepo_str(pos[pos_idx].steps[i]);
       }
     } //TRACE
 
@@ -1442,7 +1442,7 @@ ChessEngine::print_best(int dep)
   }
   last_best_depth = dep;
   last_best_step = pos[0].best;
-  std::string st = step_to_str(pos[0].best);
+  std::string st = Stepo_str(pos[0].best);
   std::cout << (pos[0].white_move ? "1." : "1...") << st;
 
   for (std::size_t i = 0; i < 10 - st.length(); i++) std::cout << ' ';
@@ -1788,7 +1788,7 @@ ChessEngine::export_pos_to_fen(int pos_idx)
 }
 
 std::string 
-ChessEngine::step_to_str(const step_t & step)
+ChessEngine::Stepo_str(const Step & step)
 {
   std::ostringstream stream;
 
@@ -1823,13 +1823,13 @@ ChessEngine::board_idx_to_str(int board_idx)
   return std::string(buf, 2);
 }
 
-position_t * 
+Position * 
 ChessEngine::get_pos(int pos_idx)
 { 
   return &pos[pos_idx]; 
 }
 
-step_t * 
+Step * 
 ChessEngine::get_best_move(int move_idx) 
 { 
   return &best_move[move_idx]; 

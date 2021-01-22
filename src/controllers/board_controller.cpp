@@ -50,8 +50,8 @@ BoardController::engine_play()
 
   msg.clear();
 
-  position_t * pos       = chess_engine.get_pos(0);
-  step_t     * best_move = chess_engine.get_best_move(0);
+  Position * pos       = chess_engine.get_pos(0);
+  Step     * best_move = chess_engine.get_best_move(0);
 
   for (int i = 0; i < MAXEPD; i++) best_move[i].c1 = -1;
 
@@ -70,7 +70,7 @@ BoardController::engine_play()
     chess_engine.move_step(0, pos[0].steps[pos[0].cur_step]);
     chess_engine.move_pos (0, pos[0].steps[pos[0].cur_step]);
 
-    // std::cout << "make move: " << chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]) << std::endl;
+    // std::cout << "make move: " << chess_engine.Stepo_str(pos[0].steps[pos[0].cur_step]) << std::endl;
     
     game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
     pos[0] = pos[1];
@@ -84,8 +84,8 @@ BoardController::engine_play()
 void
 BoardController::play(Pos pos_from, Pos pos_to)
 {
-  position_t * pos       = chess_engine.get_pos(0);
-  step_t     * best_move = chess_engine.get_best_move(0);
+  Position * pos       = chess_engine.get_pos(0);
+  Step     * best_move = chess_engine.get_best_move(0);
 
   std::ostringstream s;
 
@@ -159,7 +159,7 @@ BoardController::play(Pos pos_from, Pos pos_to)
     chess_engine.move_step(0, pos[0].steps[pos[0].cur_step]);
     chess_engine. move_pos(0, pos[0].steps[pos[0].cur_step]);
 
-    LOG_D("make move: %s", chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]).c_str());
+    LOG_D("make move: %s", chess_engine.Stepo_str(pos[0].steps[pos[0].cur_step]).c_str());
     
     game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
 

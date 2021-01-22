@@ -72,7 +72,7 @@ void
 BoardViewer::show_board(bool        play_white, 
                         Pos         cursor_pos, 
                         Pos         from_pos, 
-                        step_t *    steps, 
+                        Step *    steps, 
                         int         step_count, 
                         std::string msg)
 {
@@ -193,7 +193,7 @@ BoardViewer::show_board(bool        play_white,
 
     for (int i = 0; i < step_count; i++) {
       if ((i & 1) == 0) stream << ((i / 2) + 1) << '.';
-      stream << chess_engine.step_to_str(steps[i]) << ' ';
+      stream << chess_engine.Stepo_str(steps[i]) << ' ';
     }
 
     fmt.font_index  =  1;

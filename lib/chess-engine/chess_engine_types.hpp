@@ -26,7 +26,7 @@ const char fig_symb1[] = " pNBRQK";
 
 typedef int8_t Board[64];
 
-struct step_t {
+struct Step {
   int8_t      f1, f2; // Figure located at c1 (f1) and c2 (f2)
   signed char c1, c2; // Board location for the move, from c1 to c2
   CheckType   check;  // Indicates what king of check occurs with this step
@@ -34,17 +34,17 @@ struct step_t {
   short       weight; // Step value
 };
 
-struct position_t {
+struct Position {
   bool    white_move;
   bool    white_castle_kingside_ok, 
           white_castle_queenside_ok, 
           black_castle_kingside_ok, 
           black_castle_queenside_ok;
   uint8_t en_passant_pp;         // En Passant Pawn Position on board, if valid
-  step_t  steps[MAXSTEPS + 1];
+  Step    steps[MAXSTEPS + 1];
   int     steps_count;
   int     cur_step;
-  step_t  best;
+  Step    best;
   bool    check_on_table;
   short   weight_white;
   short   weight_black;

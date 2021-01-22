@@ -30,8 +30,8 @@ class ChessTask
 
     int                task_pos_idx;
 
-    step_t steps[MAXSTEPS]; 
-    int    steps_count;
+    Step steps[MAXSTEPS]; 
+    int      steps_count;
 
     void  add_one_step(int c1, int c2);
     void add_king_step(int8_t board_idx);
@@ -78,16 +78,16 @@ class ChessEngine
 
     bool                 solve_step();
 
-    void                  back_step(int pos_idx, step_t & step);
-    void                  move_step(int pos_idx, step_t & step);
-    void                   move_pos(int pos_idx, step_t & step);
+    void                  back_step(int pos_idx, Step & step);
+    void                  move_step(int pos_idx, Step & step);
+    void                   move_pos(int pos_idx, Step & step);
 
     Board               * get_board();
 
-    position_t            * get_pos(int pos_idx);
-    step_t          * get_best_move(int move_idx);
+    Position            * get_pos(int pos_idx);
+    Step          * get_best_move(int move_idx);
 
-    std::string         step_to_str(const step_t & step);
+    std::string         Stepo_str(const Step & step);
     std::string    board_idx_to_str(int board_idx);
 
     void                      getbm(int n, std::string ep);
@@ -144,8 +144,8 @@ class ChessEngine
     bool   halt;
     bool   endgame;
 
-    step_t last_best_step;
-    step_t best_move[MAXEPD];
+    Step   last_best_step;
+    Step   best_move[MAXEPD];
 
 };
 

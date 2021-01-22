@@ -31,10 +31,10 @@ class BoardController
     bool         game_started;
     Pos          cursor_pos;
     Pos          from_pos;
-    step_t       game_steps[1000];
-    step_t     * best_move;
-    position_t   game_pos;
-    position_t * pos;
+    Step         game_steps[1000];
+    Step       * best_move;
+    Position     game_pos;
+    Position   * pos;
     int          game_play_number;
     bool         game_play_white;
     Board      * game_board;

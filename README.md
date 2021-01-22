@@ -2,7 +2,7 @@
 
 ## Last news
 
-(Updated 2021.01.20)
+(Updated 2021.01.22)
 
 This is NOT ready. A lot still need to be done to complete the developement of the first version:
 
@@ -48,7 +48,7 @@ $ cd fonts
 $ ./subsetter.sh
 ```
 
-After that, all fonts in the `subset-latin1/otf` folder must be copied back in the `SDCard/fonts` folder.
+After that, all fonts in the `subset-latin1/otf` and `chess` folder must be copied back in the `SDCard/fonts` folder.
 
 ## Development environment
 
@@ -75,20 +75,10 @@ The following are the libraries currently in use by the application:
   $ sudo apt-get install build-essential libgtk-3-dev
   ```
 
-The following are imported C header and source files, that implement some algorithms:
+The following is imported C header and source files, that implement some algorithms:
 
 - [FreeType](https://www.freetype.org) (Parse, decode, and rasterize characters from TrueType fonts) A version of the library has been loaded in folder `freetype-2.10.4/` and compiled with specific options for the ESP32. See sub-section **FreeType library compilation for ESP32** below for further explanations.
-- [PubiXML](https://pugixml.org/) (For XML parsing)
-- [STB](https://github.com/nothings/stb) (For image loading and resizing, and zip deflating, etc.) :
 
-  - `stb_image.h` image loading/decoding from file/memory: JPG, PNG, BMP, GIF; deflating (unzip)
-  - `stb_image_resize.h` resize images larger/smaller 
-
-The following libraries were used at first but replaced with counterparts:
-
-- [ZLib](https://zlib.net/) deflating (unzip). A file deflation function is already supplied with `stb_image.h`.
-- [RapidXML](http://rapidxml.sourceforge.net/index.htm) (For XML parsing) Too much stack space required. Replaced with PubiXML.
-- [SQLite3](https://www.sqlite.org/index.html) (The amalgamation version. For books simple database) Too many issues to get it runs on an ESP32. I built my own simple DB tool (look at `src/simple_db.cpp` and `include/simble_db.hpp`)
 
 ### FreeType library compilation for ESP32
 

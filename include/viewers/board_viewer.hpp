@@ -36,7 +36,7 @@ class BoardViewer
     void show_board(bool        play_white, 
                     Pos         cursor_pos, 
                     Pos         from_pos, 
-                    step_t    * steps, 
+                    Step    * steps, 
                     int         step_count, 
                     std::string msg);
 

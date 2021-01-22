@@ -548,7 +548,7 @@
   {
     hb_buffer_t*          buf = (hb_buffer_t*)buf_;
     hb_glyph_info_t*      ginfo;
-    hb_glyph_position_t*  gpos;
+    hb_glyph_Position*  gpos;
     unsigned int          gcount;
 
     FT_UNUSED( metrics );
