@@ -70,7 +70,7 @@ bool
 ConfigBase<IdType, cfg_size>::get(IdType id, int32_t * val) 
 {
   for (auto entry : cfg) {
-    if((entry.ident == id) && (entry.type == EntryType::INT)) {
+    if ((entry.ident == id) && (entry.type == EntryType::INT)) {
       *val = * ((int32_t *) entry.value);
       return true;
     }
@@ -85,7 +85,7 @@ bool
 ConfigBase<IdType, cfg_size>::get(IdType id, int8_t * val) 
 {
   for (auto entry : cfg) {
-    if((entry.ident == id) && (entry.type == EntryType::BYTE)) {
+    if ((entry.ident == id) && (entry.type == EntryType::BYTE)) {
       *val = * ((int8_t *) entry.value);
       return true;
     }
@@ -166,7 +166,7 @@ ConfigBase<IdType, cfg_size>::parse_line(
 
   for (;;) {
     uint8_t size = strlen(buff);
-    if (buff[size - 1] == '\n') buff[size - 1] = 0;
+    if ((size > 0) && (buff[size - 1] == '\n')) buff[size - 1] = 0;
 
     // Get rid of blank lines, spaces at beginning of line and comments
 

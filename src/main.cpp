@@ -101,7 +101,10 @@
         inkplate_platform.deep_sleep();
       }
 
-      chess_engine.setup();
+      int32_t time;
+      config.get(Config::Ident::ENGINE_TIME, &time);
+
+      chess_engine.setup(time * 15);
 
       app_controller.start();
     }
@@ -131,7 +134,12 @@
     {
       TaskHandle_t xHandle = NULL;
 
-      xTaskCreate(mainTask, "mainTask", STACK_SIZE, (void *) 1, configMAX_PRIORITIES - 1, &xHandle);
+      xTaskCreate(mainTask, 
+                  "mainTask", 
+                  STACK_SIZE, (void *) 1, 
+                  configMAX_PRIORITIES - 1, 
+                  &xHandle);
+                  
       configASSERT(xHandle);
     }
 
@@ -177,7 +185,10 @@
         exit(0);
       }
 
-      chess_engine.setup();
+      int8_t time_limit;
+      config.get(Config::Ident::ENGINE_TIME, &time_limit);
+
+      chess_engine.setup(time_limit * 15);
 
       // exit(0)  // Used for some Valgrind tests
       app_controller.start();

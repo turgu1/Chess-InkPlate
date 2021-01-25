@@ -13,18 +13,25 @@ class BoardController
 {
   public:
     BoardController() : 
-                  msg(""),
-         game_started(false  ),
-      game_play_white(false   ),
-           game_board(nullptr),
-            game_over(false  ) { }
+                         msg(""),
+                game_started(false  ),
+             game_play_white(true   ),
+                  game_board(nullptr),
+                   game_over(false  ),
+         promotion_move_type(MoveType::UNKNOWN) { }
     
-    void key_event(EventMgr::KeyEvent key);
-    void     enter();
-    void     leave(bool going_to_deep_sleep = false);
+    void           key_event(EventMgr::KeyEvent key);
+    void               enter();
+    void               leave(bool going_to_deep_sleep = false);
+    void            new_game(bool user_play_white);
+    void    set_promotion_to(MoveType move_type) { promotion_move_type = move_type; }
+    MoveType   get_promotion() { return promotion_move_type; }
+    bool  is_game_play_white() { return game_play_white;     }
+    void                save();
 
   private:
     static constexpr char const * TAG = "BoardController";
+    static constexpr uint8_t      SAVED_GAME_FILE_VERSION = 1;
 
     std::string  msg;
 
@@ -34,15 +41,17 @@ class BoardController
     Step         game_steps[1000];
     Step       * best_move;
     Position     game_pos;
-    Position   * pos;
-    int          game_play_number;
+    int16_t      game_play_number;
     bool         game_play_white;
     Board      * game_board;
     bool         game_over;
 
-    void    new_game(bool user_play_white);
+    MoveType     promotion_move_type;
+
     void engine_play();
     void        play(Pos from_pos, Pos to_pos);
+    void      replay();
+    bool        load();
 };
 
 #if __BOARD_CONTROLLER__

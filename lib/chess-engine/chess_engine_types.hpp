@@ -26,13 +26,17 @@ const char fig_symb1[] = " pNBRQK";
 
 typedef int8_t Board[64];
 
+#pragma pack(push, 1)
 struct Step {
-  int8_t      f1, f2; // Figure located at c1 (f1) and c2 (f2)
-  signed char c1, c2; // Board location for the move, from c1 to c2
-  CheckType   check;  // Indicates what king of check occurs with this step
-  MoveType    type;   // Kind of move
-  short       weight; // Step value
+  short       weight;   // Step value
+  int8_t      f1, f2;   // Figure located at c1 (f1) and c2 (f2)
+  int8_t      c1, c2;   // Board location for the move, from c1 to c2
+  CheckType   check;    // Indicates what king of check occurs with this step
+  MoveType    type;     // Kind of move
+  bool        same_col; // Same column indicator
+  bool        same_row; // Same row indicator
 };
+#pragma pack(pop)
 
 struct Position {
   bool    white_move;

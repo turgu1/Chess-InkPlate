@@ -18,20 +18,127 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 
 static inline bool is_white_fig(int8_t fig) { return fig > 0; }
 static inline bool is_black_fig(int8_t fig) { return fig < 0; }
 
+bool 
+BoardController::load()
+{
+  std::string   filename = MAIN_FOLDER "/current_game.save";
+  std::ifstream file(filename, std::ios::in | std::ios::binary);
+
+  LOG_D("Loading saved game from file %s.", filename.c_str());
+
+  int8_t  version;
+  int16_t step_count;
+
+  if (!file.is_open()) {
+    LOG_I("Unable to open saved game file.");
+    return false;
+  }
+
+  for (;;) {
+    if (file.read(reinterpret_cast<char *>(&version), 1).fail()) break;
+    if (version != SAVED_GAME_FILE_VERSION) break;
+
+    if (file.read(reinterpret_cast<char *>(&game_play_white), sizeof(game_play_white)).fail()) break;
+    if (file.read(reinterpret_cast<char *>(&step_count     ), sizeof(step_count     )).fail()) break;
+
+    for (int16_t i = 0; i < step_count; i++) {
+      if (file.read(reinterpret_cast<char *>(&game_steps[i]), sizeof(Step)).fail()) break;
+    }
+
+    break;
+  }
+
+  bool res = !file.fail();
+  file.close();
+
+  LOG_D("Saved game load %s.", res ? "Success" : "Error");
+
+  if (res) {
+    game_play_number = step_count;
+  }  
+
+  return res;
+}
+
+void 
+BoardController::save()
+{
+  std::string   filename = MAIN_FOLDER "/current_game.save";
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+
+  LOG_D("Saving game to file %s", filename.c_str());
+
+  if (!file.is_open()) {
+    LOG_E("Not able to open saved game file.");
+    return;
+  }
+
+  int16_t step_count = game_play_number;
+
+  for (;;) {
+    if (file.write(reinterpret_cast<const char *>(&SAVED_GAME_FILE_VERSION), 1    ).fail()) break;
+
+    if (file.write(reinterpret_cast<const char *>(&game_play_white), sizeof(game_play_white)).fail()) break;
+    if (file.write(reinterpret_cast<const char *>(&step_count     ), sizeof(step_count     )).fail()) break;
+
+    for (int16_t i = 0; i < step_count; i++) {
+      if (file.write(reinterpret_cast<const char *>(&game_steps[i]), sizeof(Step)).fail()) break;
+    }
+
+    break;
+  }
+
+  bool res = !file.fail();
+  file.close();
+
+  LOG_D("Game saved %s.", res ? "Success" : "Error");
+
+  return;
+}
+
+void 
+BoardController::replay()
+{
+  Position * pos = chess_engine.get_pos(0);
+  game_board     = chess_engine.get_board();
+
+  chess_engine.load_board_from_fen(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+  );
+
+  pos[0].white_move = true;
+
+  for (int16_t step_idx = 0; step_idx < game_play_number; step_idx++) {
+    chess_engine.move_step(0, game_steps[step_idx]);
+    chess_engine.move_pos (0, game_steps[step_idx]);
+
+    chess_engine.generate_steps(1);
+    pos[1].white_move = !pos[0].white_move;
+    pos[0]            =  pos[1];
+  }
+
+  cursor_pos = game_play_white ? Pos(3, 3) : Pos(4, 4);
+  from_pos   = Pos(-1, -1);
+}
+
 void
 BoardController::new_game(bool user_play_white)
 {
-  game_over = false;
+  game_over    = false;
+  game_started = true;
+
   chess_engine.load_board_from_fen(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
   );
 
   game_board = chess_engine.get_board();
 
+  game_play_white  = user_play_white;
   game_play_number = 0;
 
   cursor_pos = user_play_white ? Pos(3, 1) : Pos(3, 6);
@@ -70,9 +177,17 @@ BoardController::engine_play()
     chess_engine.move_step(0, pos[0].steps[pos[0].cur_step]);
     chess_engine.move_pos (0, pos[0].steps[pos[0].cur_step]);
 
-    // std::cout << "make move: " << chess_engine.Stepo_str(pos[0].steps[pos[0].cur_step]) << std::endl;
+    // std::cout << "make move: " << chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]) << std::endl;
     
     game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
+
+    if (game_steps[game_play_number].check == CheckType::NONE) {
+      if (( pos[0].white_move && chess_engine.check_on_black_king()) ||
+          (!pos[0].white_move && chess_engine.check_on_white_king())) {
+        game_steps[game_play_number].check = CheckType::CHECK;
+      }
+    }
+
     pos[0] = pos[1];
     game_play_number++;
   } 
@@ -87,8 +202,6 @@ BoardController::play(Pos pos_from, Pos pos_to)
   Position * pos       = chess_engine.get_pos(0);
   Step     * best_move = chess_engine.get_best_move(0);
 
-  std::ostringstream s;
-
   int8_t f1, f2;
   int8_t c1, c2;
 
@@ -98,70 +211,56 @@ BoardController::play(Pos pos_from, Pos pos_to)
   f1 = (*game_board)[c1];
   f2 = (*game_board)[c2];
 
-  if (game_play_white) {
-    for (;;) {
-      if (f1 == KING) {
-        if (c1 == 60) {
-          if      (c2 == 58) { s << "0-0-0"; break; }
-          else if (c2 == 62) { s << "0-0"  ; break; }
-        }
-        s << 'K' 
-          << chess_engine.board_idx_to_str(c1)
-          << (is_black_fig(f2) ? 'x' : '-')
-          << chess_engine.board_idx_to_str(c2);
-      }
-      else {
-        if (f1 > PAWN) s << fig_symb[f1];
-        s << chess_engine.board_idx_to_str(c1)
-          << (is_black_fig(f2) ? 'x' : '-')
-          << chess_engine.board_idx_to_str(c2);
-      }
+  std::cout << "=====> f1:" << +f1 << " f2:" << +f2 << " c1:" << +c1 << " c2:" << +c2 << std::endl;
+
+  pos[0].white_move = game_play_white;
+  chess_engine.generate_steps(0);
+
+  int step_idx;
+  bool found = false;
+
+  for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
+    Step * s = &pos[0].steps[step_idx];
+    std::cout << "---> f1:" << +s->f1 << " f2:" << +s->f2 << " c1:" << +s->c1 << " c2:" << +s->c2 << std::endl;
+  }
+
+  for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
+    Step * s = &pos[0].steps[step_idx];
+    if ((s->c1 == c1) && (s->c2 == c2)) {
+      found = true;
       break;
     }
   }
-  else {
-    for (;;) {
-      if (f1 == -KING) {
-        if (c1 == 4) {
-          if      (c2 == 2) { s << "0-0-0"; break; }
-          else if (c2 == 6) { s << "0-0"  ; break; }
-        }
-        s << 'K' 
-          << chess_engine.board_idx_to_str(c1)
-          << (is_white_fig(f2) ? 'x' : '-')
-          << chess_engine.board_idx_to_str(c2);
-      }
-      else {
-        if (f1 < -PAWN) s << fig_symb[-f1];
-        s << chess_engine.board_idx_to_str(c1)
-          << (is_white_fig(f2) ? 'x' : '-')
-          << chess_engine.board_idx_to_str(c2);
-      }
-      break;
-    }
-  }  
 
-  LOG_D("User Move: %s", s.str().c_str());
+  // best_move[0].c1 = -1;
+  // chess_engine.getbm(0, s.str());
 
-  chess_engine.generate_steps(0);
-  best_move[0].c1 = -1;
-  chess_engine.getbm(0, s.str());
+  // if (best_move[0].c1 != -1) {
+  //   for (int i = 0; i < pos[0].steps_count; i++) {
+  //     if ((pos[0].steps[i].c1   == best_move[0].c1  ) && 
+  //         (pos[0].steps[i].c2   == best_move[0].c2  ) &&
+  //         (pos[0].steps[i].type == best_move[0].type)) {
+  //       pos[0].cur_step = i;
+  //     }
+  //   }
 
-  if (best_move[0].c1 != -1) {
-    for (int i = 0; i < pos[0].steps_count; i++) {
-      if ((pos[0].steps[i].c1   == best_move[0].c1  ) && 
-          (pos[0].steps[i].c2   == best_move[0].c2  ) &&
-          (pos[0].steps[i].type == best_move[0].type)) {
-        pos[0].cur_step = i;
-      }
-    }
-
+  if (found) {
+    best_move[0] = pos[0].steps[step_idx];
+    
+    pos[0].cur_step = step_idx;
     chess_engine.move_step(0, pos[0].steps[pos[0].cur_step]);
     chess_engine. move_pos(0, pos[0].steps[pos[0].cur_step]);
 
-    LOG_D("make move: %s", chess_engine.Stepo_str(pos[0].steps[pos[0].cur_step]).c_str());
+    LOG_D("make move: %s", chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]).c_str());
     
     game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
+
+    if (game_steps[game_play_number].check == CheckType::NONE) {
+      if (( pos[0].white_move && chess_engine.check_on_black_king()) ||
+          (!pos[0].white_move && chess_engine.check_on_white_king())) {
+        game_steps[game_play_number].check = CheckType::CHECK;
+      }
+    }
 
     pos[1].white_move = !pos[0].white_move;
     pos[0]            =  pos[1];
@@ -179,8 +278,13 @@ void
 BoardController::enter()
 { 
   if (!game_started) {
-    new_game(game_play_white);
-    game_started = true;
+    if (load()) {
+      replay();
+    }
+    else {
+      new_game(game_play_white);
+      game_started = true;
+    }
   }
   
   if (msg.empty()) msg = "User play. Please make a move:";
@@ -195,6 +299,7 @@ BoardController::enter()
 void 
 BoardController::leave(bool going_to_deep_sleep)
 {
+  if (going_to_deep_sleep) save();
 }
 
 void 
@@ -262,7 +367,7 @@ BoardController::key_event(EventMgr::KeyEvent key)
         else {
           play(from_pos, cursor_pos);
           from_pos = null_pos;
-          cursor_pos = game_play_white ? Pos(3, 3) : Pos(5, 3);
+          cursor_pos = game_play_white ? Pos(3, 3) : Pos(4, 4);
 
           if (msg.empty()) msg = "User play. Please make a move:";
 

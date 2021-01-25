@@ -12,7 +12,7 @@
 
 #include "chess_engine.hpp"
 
-#if EPUB_INKPLATE_BUILD
+#if CHESS_INKPLATE_BUILD
   #include "viewers/battery_viewer.hpp"
 #endif
 
@@ -40,7 +40,11 @@ constexpr char row_nbr[] = {
 };
 
 void
-BoardViewer::show_cursor(bool play_white, Dim dim, Pos cursor_pos, Page::Format & fmt, bool bold)
+BoardViewer::show_cursor(bool play_white, 
+                         Dim dim, 
+                         Pos cursor_pos, 
+                         Page::Format & fmt, 
+                         bool bold)
 {
   Pos pos;
 
@@ -72,47 +76,11 @@ void
 BoardViewer::show_board(bool        play_white, 
                         Pos         cursor_pos, 
                         Pos         from_pos, 
-                        Step *    steps, 
+                        Step *      steps, 
                         int         step_count, 
                         std::string msg)
 {
-  page.set_compute_mode(Page::ComputeMode::DISPLAY);
-
-  int8_t font_index;
-  config.get(Config::Ident::DEFAULT_FONT, &font_index);
-  if ((font_index < 0) || (font_index > 7)) font_index = 0;
-
-  font_index += 5;
-
-  Page::Format fmt = {
-    .line_height_factor =   1.0,
-    .font_index         =     0,
-    .font_size          =    25,
-    .indent             =     0,
-    .margin_left        =     5,
-    .margin_right       =    10,
-    .margin_top         =     5,
-    .margin_bottom      =    10,
-    .screen_left        =     0,
-    .screen_right       =     0,
-    .screen_top         =     0,
-    .screen_bottom      =     0,
-    .width              =     0,
-    .height             =     0,
-    .trim               = false,
-    .pre                = false,
-    .font_style         = Fonts::FaceStyle::NORMAL,
-    .align              = Page::Align::LEFT,
-    .text_transform     = Page::TextTransform::NONE
-  };
-
-  fmt.font_index = font_index;
-
-  page.start(fmt);
-
-  Board      * board;
-
-  board = chess_engine.get_board();
+  Board * board = chess_engine.get_board();
 
   std::ostringstream stream;
 
@@ -170,6 +138,39 @@ BoardViewer::show_board(bool        play_white,
     stream << ')';
   }
 
+  int8_t font_index;
+  config.get(Config::Ident::DEFAULT_FONT, &font_index);
+  if ((font_index < 0) || (font_index > 7)) font_index = 0;
+
+  font_index += 5;
+
+  Page::Format fmt = {
+    .line_height_factor =   1.0,
+    .font_index         =     0,
+    .font_size          =    24,
+    .indent             =     0,
+    .margin_left        =     0,
+    .margin_right       =     5,
+    .margin_top         =     5,
+    .margin_bottom      =    10,
+    .screen_left        =     0,
+    .screen_right       =     0,
+    .screen_top         =     0,
+    .screen_bottom      =     0,
+    .width              =     0,
+    .height             =     0,
+    .trim               = false,
+    .pre                = false,
+    .font_style         = Fonts::FaceStyle::NORMAL,
+    .align              = Page::Align::LEFT,
+    .text_transform     = Page::TextTransform::NONE
+  };
+
+  fmt.font_index = font_index;
+
+  page.set_compute_mode(Page::ComputeMode::DISPLAY);
+  page.start(fmt);
+
   Dim dim = page.add_text_raw(stream.str(), fmt);
 
   if (cursor_pos.x >= 0) show_cursor(play_white, dim, cursor_pos, fmt, true);
@@ -193,13 +194,13 @@ BoardViewer::show_board(bool        play_white,
 
     for (int i = 0; i < step_count; i++) {
       if ((i & 1) == 0) stream << ((i / 2) + 1) << '.';
-      stream << chess_engine.Stepo_str(steps[i]) << ' ';
+      stream << chess_engine.step_to_str(steps[i]) << ' ';
     }
 
     fmt.font_index  =  1;
     fmt.font_size   = 10;
-    fmt.margin_left =  5 + (9 * dim.width) + 20;
-    fmt.margin_top  =  6 + dim.height;
+    fmt.margin_left =  5 + (9 * dim.width ) + 15;
+    fmt.margin_top  =  6 +      dim.height  - 20;
 
     page.set_limits(fmt);
 
@@ -207,6 +208,28 @@ BoardViewer::show_board(bool        play_white,
     page.add_text(stream.str(), fmt);
     page.end_paragraph(fmt);
   }
+
+  #if CHESS_INKPLATE_BUILD
+    int8_t show_heap;
+    config.get(Config::Ident::SHOW_HEAP, &show_heap);
+
+    if (show_heap != 0) {     
+      stream.str(std::string());
+      stream << heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) 
+            << " / " 
+            << heap_caps_get_free_size(MALLOC_CAP_8BIT);
+
+      fmt.font_index  =  1;
+      fmt.font_size   =  9;
+      fmt.align = Page::Align::RIGHT;
+
+      TTF * font = fonts.get(1);
+      page.put_str_at(stream.str(), Pos(-1, Screen::HEIGHT + font->get_descender_height(9) - 2), fmt);
+    }
+
+    BatteryViewer::show();
+  #endif
+
 
   page.paint();
 }

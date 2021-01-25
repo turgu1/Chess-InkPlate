@@ -69,6 +69,14 @@ class FormViewer
       { "Mediaval",  6 }
     };
 
+    static constexpr Choice engine_time_choices[] = {
+      { "15s",  1 },
+      { "30s",  2 },
+      { "1m",   4 },
+      { "2m",   8 },
+      { "5m",  20 }
+    };
+
   private:
     static constexpr uint8_t MAX_FORM_ENTRY   =  10;
     static constexpr uint8_t MAX_CHOICE_ENTRY =  30;

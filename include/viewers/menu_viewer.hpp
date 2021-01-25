@@ -11,8 +11,16 @@ class MenuViewer
   public:
     static constexpr uint8_t MAX_MENU_ENTRY = 10;
 
-    enum class Icon { RETURN, REVERT, REFRESH, BOOK, BOOK_LIST, MAIN_PARAMS, FONT_PARAMS, POWEROFF, WIFI, INFO, END_MENU };
-    char icon_char[10] = { '@', 'H', 'R', 'E', 'F', 'C', 'A', 'Z', 'S', 'I' };
+    enum class Icon { RETURN, REVERT, REFRESH, BOOK, BOOK_LIST, MAIN_PARAMS, 
+                      FONT_PARAMS, POWEROFF, WIFI, INFO,
+                      W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
+                      B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING, 
+                      CHESS, END_MENU };
+
+    char icon_char[23] = { '@', 'H', 'R', 'E', 'F', 'C', 
+                           'A', 'Z', 'S', 'I', 
+                           'f', 'a', 'b', 'c', 'd', 'e', 
+                           'h', 'i', 'j', 'k', 'l', 'm', 'n' };
     struct MenuEntry {
       Icon icon;
       const char * caption;
@@ -37,6 +45,7 @@ class MenuViewer
       Pos pos;
       Dim dim;
     } entry_locs[MAX_MENU_ENTRY];
+    
     MenuEntry * menu;
 };
 

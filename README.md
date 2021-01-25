@@ -13,6 +13,7 @@ This is NOT ready. A lot still need to be done to complete the developement of t
 - [x] Graphical Chess board display
 - [x] Interaction with the chess board
 - [x] Integration with the chess engine
+- [ ] PGN notation
 - [ ] Menu for main actions
 - [ ] Menu for chess font selection
 - [ ] Menu for pawn promotion 

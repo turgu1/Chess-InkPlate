@@ -50,7 +50,6 @@ class ChessEngine
 
     ChessEngine() : 
               TRACE(0),
-         time_limit(1 * 60 * 1000),
         best_solved(false),
                zero(false),
               level(2),
@@ -70,7 +69,8 @@ class ChessEngine
                halt(false),
             endgame(false) { }
 
-    void                      setup();
+    void                      setup(int32_t time);
+    void            set_engine_time(int32_t time);
     void             generate_steps(int pos_idx);
 
     bool        load_board_from_fen(std::string str);
@@ -84,13 +84,18 @@ class ChessEngine
 
     Board               * get_board();
 
-    Position            * get_pos(int pos_idx);
-    Step          * get_best_move(int move_idx);
+    Position              * get_pos(int pos_idx);
+    Step            * get_best_move(int move_idx);
 
-    std::string         Stepo_str(const Step & step);
+    std::string         step_to_str(const Step & step);
     std::string    board_idx_to_str(int board_idx);
 
-    void                      getbm(int n, std::string ep);
+    bool        check_on_white_king();
+    bool        check_on_black_king();
+
+#if 0
+    void                      getbm(int n, Step ep);
+#endif
 
     inline bool is_black_fig(int8_t fig) const { return fig < 0; }
     inline bool is_white_fig(int8_t fig) const { return fig > 0; }

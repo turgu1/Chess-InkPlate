@@ -16,11 +16,11 @@
 #      http_port
 #      battery
 #      timeout
-#      font_size
 #      default_font
 #      orientation
 #      resolution
 #      show_heap
+#      engine_time
 # ---
 
 version = 1
@@ -29,8 +29,8 @@ wifi_pwd = "NONE"
 http_port = 80
 battery = 2
 timeout = 5
-font_size = 8
 default_font = 2
 orientation = 2
 resolution = 1
 show_heap = 1
+engine_time = 1

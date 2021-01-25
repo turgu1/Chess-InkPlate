@@ -18,35 +18,35 @@
 #include <chrono>
 #include <cstring>
 
+#include <cassert>
+
 // =====Shared variables ==================================================
 
 static Board board;
 
 static int8_t idx_white_king = 0;
 static int8_t idx_black_king = 0;
+static bool          endgame = false;
 
-static Position pos[MAXDEPTH];
-
-static bool   endgame = false;
+static Position pos[MAXDEPTH + 1];
 
 enum class TaskReq : int8_t { EXEC, STOP };
+enum class EngineReq  : int8_t { COMPLETED };
 
 struct TaskQueueData {
   TaskReq req;
 };
-
-enum class EngineReq  : int8_t { COMPLETED };
 
 struct EngineQueueData {
   EngineReq req;
 };
 
 #if CHESS_LINUX_BUILD  
-  static mqd_t task_queue;
-  static mqd_t engine_queue;
+  static mqd_t   task_queue;
+  static mqd_t   engine_queue;
 
-  static mq_attr task_attr      = { 0, 5, sizeof(     TaskQueueData), 0 };
-  static mq_attr engine_attr    = { 0, 5, sizeof(   EngineQueueData), 0 };
+  static mq_attr task_attr      = { 0, 5, sizeof(  TaskQueueData), 0 };
+  static mq_attr engine_attr    = { 0, 5, sizeof(EngineQueueData), 0 };
 
   #define QUEUE_SEND(q, m, t)        mq_send(q, (const char *) &m, sizeof(m),       1)
   #define QUEUE_RECEIVE(q, m, t)  mq_receive(q,       (char *) &m, sizeof(m), nullptr)
@@ -67,16 +67,16 @@ struct EngineQueueData {
   static xQueueHandle engine_queue;
   
   #define QUEUE_SEND(q, m, t)        xQueueSend(q, &m, t)
-  #define QUEUE_RECEIVE(q, m, t)  xQueueReceive(q, &m, t)
+  #define QUEUE_RECEIVE(q, m, t)  while (!xQueueReceive(q, &m, t)) std::this_thread::yield()
 #endif
 
 // ===== Shared funtions ==================================================
 
-static bool 
-check_on_white_king()
+bool 
+ChessEngine::check_on_white_king()
 {
-  signed char f2 = NO_FIG;
-  int         j  = 0;
+  int8_t f2 = NO_FIG;
+  int    j  = 0;
   
   if (board[idx_white_king] != KING) {
     for (int i = 0; i < 64; i++) {
@@ -128,11 +128,11 @@ check_on_white_king()
   return false;
 }
 
-static bool 
-check_on_black_king()
+bool 
+ChessEngine::check_on_black_king()
 {
-  signed char f2 = NO_FIG;
-  int         j  = 0;
+  int8_t f2 = NO_FIG;
+  int    j  = 0;
   
   if (board[idx_black_king] != -KING) {
     for (int i = 0; i < 64; i++) { 
@@ -203,10 +203,11 @@ void ChessTask::exec()
   TaskQueueData task_queue_data;
 
   for (;;) {
-    QUEUE_RECEIVE(task_queue, task_queue_data, 0);
+    QUEUE_RECEIVE(task_queue, task_queue_data, 5000 / portTICK_PERIOD_MS);
     if (task_queue_data.req == TaskReq::EXEC) {
       // task_tik=micros();
       pos_idx = task_pos_idx;
+      assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
       if (board[idx_white_king] != KING) {
         for (int board_idx = 0; board_idx < 64; board_idx++) {
           if (board[board_idx] == KING) {
@@ -223,16 +224,20 @@ void ChessTask::exec()
           }
         }
       }
+      assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
       if (pos_idx > 0) {
         if (pos[pos_idx - 1].steps[pos[pos_idx - 1].cur_step].check == CheckType::NONE) {
-          if (pos[pos_idx].white_move) pos[pos_idx].check_on_table = check_on_white_king();
-          else pos[pos_idx].check_on_table = check_on_black_king();
-          pos[pos_idx - 1].steps[pos[pos_idx - 1].cur_step].check = pos[pos_idx].check_on_table ? CheckType::CHECK : CheckType::NONE;
+          if (pos[pos_idx].white_move) 
+            pos[pos_idx].check_on_table = chess_engine.check_on_white_king();
+          else 
+            pos[pos_idx].check_on_table = chess_engine.check_on_black_king();
+          pos[pos_idx - 1].steps[pos[pos_idx - 1].cur_step].check = 
+            pos[pos_idx].check_on_table ? CheckType::CHECK : CheckType::NONE;
         } 
         else pos[pos_idx].check_on_table = true;
       } 
-      else if (pos[0].white_move) pos[0].check_on_table = check_on_white_king();
-      else pos[0].check_on_table = check_on_black_king();
+      else if (pos[0].white_move) pos[0].check_on_table = chess_engine.check_on_white_king();
+      else pos[0].check_on_table = chess_engine.check_on_black_king();
 
       steps_count = 0;
 
@@ -401,6 +406,8 @@ ChessTask::add_king_step(int8_t board_idx)
 void
 ChessTask::retrieve_steps(int pos_idx)
 {
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+
   int count = pos[pos_idx].steps_count;
   for (int i = 0; i < steps_count; i++) {
     pos[pos_idx].steps[count++] = steps[i];
@@ -413,6 +420,8 @@ ChessTask::retrieve_steps(int pos_idx)
 void 
 ChessEngine::move_pos(int pos_idx, Step & step)
 {
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+
   pos[pos_idx + 1].white_castle_kingside_ok  = pos[pos_idx].white_castle_kingside_ok;
   pos[pos_idx + 1].white_castle_queenside_ok = pos[pos_idx].white_castle_queenside_ok;
   pos[pos_idx + 1].black_castle_kingside_ok  = pos[pos_idx].black_castle_kingside_ok;
@@ -428,7 +437,7 @@ ChessEngine::move_pos(int pos_idx, Step & step)
       else if (step.c1 == 63) pos[pos_idx + 1].white_castle_kingside_ok  = false;
       else if (step.c1 == 56) pos[pos_idx + 1].white_castle_queenside_ok = false;
     }
-    if (step.type == MoveType::SIMPLE && step.f1 == PAWN && step.c2 == step.c1 - 16) {
+    if ((step.type == MoveType::SIMPLE) && (step.f1 == PAWN) && (step.c2 == step.c1 - 16)) {
       if (((column[step.c2] > 1) && (board[step.c2 - 1] == -PAWN)) || 
           ((column[step.c2] < 8) && (board[step.c2 + 1] == -PAWN))) {
         pos[pos_idx + 1].en_passant_pp = step.c1 - 8;
@@ -444,7 +453,7 @@ ChessEngine::move_pos(int pos_idx, Step & step)
     }
     
     if (stats) {
-      if (step.f1 == KING && endgame) {
+      if ((step.f1 == KING) && endgame) {
         pos[pos_idx + 1].weight_both = pos[pos_idx].weight_both + 
                                        stat_weight_white[KING][step.c2] - 
                                        stat_weight_white[KING][step.c1];
@@ -466,7 +475,7 @@ ChessEngine::move_pos(int pos_idx, Step & step)
       else if (step.c1 == 7) pos[pos_idx + 1].black_castle_kingside_ok  = false;
       else if (step.c1 == 0) pos[pos_idx + 1].black_castle_queenside_ok = false;
     }
-    if (step.type == MoveType::SIMPLE && step.f1 == -PAWN && step.c2 == step.c1 + 16) {
+    if ((step.type == MoveType::SIMPLE) && (step.f1 == -PAWN) && (step.c2 == step.c1 + 16)) {
       if (((column[step.c2] > 1) && (board[step.c2 - 1] == PAWN)) || 
           ((column[step.c2] < 8) && (board[step.c2 + 1] == PAWN))) {
         pos[pos_idx + 1].en_passant_pp = step.c1 + 8;
@@ -588,6 +597,8 @@ ChessEngine::back_step(int pos_idx, Step & step)
   board[step.c1] = step.f1;
   board[step.c2] = step.f2;
 
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+
   if (pos[pos_idx].white_move) {
     if (step.f1 == KING) idx_white_king = step.c1;
     switch (step.type) {
@@ -684,16 +695,18 @@ ChessEngine::add_knight_step(int pos_idx, int board_idx)
   signed char f2;
   int         j  = 0;
 
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+
   while (knight_step[board_idx][j] != 99) {
     f2 = board[knight_step[board_idx][j]];
     if ((f2 == NO_FIG) || 
         (is_black_fig(f2) && is_white_fig(f1)) || 
         (is_white_fig(f2) && is_black_fig(f1))) {
-      pos[pos_idx].steps[pos[pos_idx].steps_count].type = MoveType::SIMPLE;
-      pos[pos_idx].steps[pos[pos_idx].steps_count].c1   = board_idx;
-      pos[pos_idx].steps[pos[pos_idx].steps_count].c2   = knight_step[board_idx][j];
-      pos[pos_idx].steps[pos[pos_idx].steps_count].f1   = f1;
-      pos[pos_idx].steps[pos[pos_idx].steps_count].f2   = f2;
+      pos[pos_idx].steps[pos[pos_idx].steps_count].type  = MoveType::SIMPLE;
+      pos[pos_idx].steps[pos[pos_idx].steps_count].c1    = board_idx;
+      pos[pos_idx].steps[pos[pos_idx].steps_count].c2    = knight_step[board_idx][j];
+      pos[pos_idx].steps[pos[pos_idx].steps_count].f1    = f1;
+      pos[pos_idx].steps[pos[pos_idx].steps_count].f2    = f2;
       pos[pos_idx].steps_count++;
     }
     j++;
@@ -706,6 +719,8 @@ ChessEngine::add_stra_step(int pos_idx, int board_idx)
   signed char f1 = board[board_idx];
   signed char f2 = NO_FIG;
   int         j  = 0;
+
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
 
   while (stra_step[board_idx][j] != 99) {
     if (stra_step[board_idx][j] == 88) f2 = NO_FIG;
@@ -736,6 +751,8 @@ ChessEngine::add_diag_step(int pos_idx, int board_idx)
   signed char f2 = NO_FIG;
   int         j  = 0;
 
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+
   while (diag_step[board_idx][j] != 99) {
     if (diag_step[board_idx][j] == 88) f2 = NO_FIG;
     else if (f2 == NO_FIG) {
@@ -755,17 +772,18 @@ ChessEngine::add_diag_step(int pos_idx, int board_idx)
   }
 }
 
+#if 0
 void 
-ChessEngine::getbm(int move_idx, std::string ep)
+ChessEngine::getbm(int move_idx, const Step & ep)
 {
-  if (ep == "0-0") {
+  if (ep.type == MoveType::CASTLE_KINGSIDE) {
     for (int i = 0; i < pos[0].steps_count; i++)
       if (pos[0].steps[i].type == MoveType::CASTLE_KINGSIDE)   { //
         best_move[move_idx] = pos[0].steps[i];
         return;
       }
   } 
-  else if (ep == "0-0-0") {
+  else if (ep.type == MoveType::CASTLE_QUEENSIDE) {
     for (int i = 0; i < pos[0].steps_count; i++)
       if (pos[0].steps[i].type == MoveType::CASTLE_QUEENSIDE)   { //
         best_move[move_idx] = pos[0].steps[i];
@@ -812,11 +830,11 @@ ChessEngine::getbm(int move_idx, std::string ep)
           best_move[move_idx] = pos[0].steps[i];
           return;
         }
-        if (Stepo_str(pos[0].steps[i]) == ep) {
+        if (step_to_str(pos[0].steps[i]) == ep) {
           best_move[move_idx] = pos[0].steps[i];
         }
         else {
-          std::string st = Stepo_str(pos[0].steps[i]);
+          std::string st = step_to_str(pos[0].steps[i]);
           st = st.substr(0, 1) + st.substr(2);
           if ((pos[0].steps[i].f2 != NO_FIG) && (ep.at(1) == 'x') && (st == ep)) {
             best_move[move_idx] = pos[0].steps[i];
@@ -826,6 +844,7 @@ ChessEngine::getbm(int move_idx, std::string ep)
     }
   }
 }
+#endif
 
 bool 
 ChessEngine::checkd_w()
@@ -897,6 +916,10 @@ void
 ChessEngine::sort_steps(int pos_idx)
 {
   Step tmp;
+
+  assert((pos_idx >= 0) && (pos_idx < MAXDEPTH));
+  assert (pos[pos_idx].steps_count < MAXSTEPS);
+
   for (int i = 0; i < pos[pos_idx].steps_count - 1; i++) {
     int maxweight = pos[pos_idx].steps[i].weight;
     int maxj      = i;
@@ -948,7 +971,7 @@ ChessEngine::generate_steps(int pos_idx)
   //int in=0;
 
   EngineQueueData engine_queue_data;
-  QUEUE_RECEIVE(engine_queue, engine_queue_data, 0);
+  QUEUE_RECEIVE(engine_queue, engine_queue_data, 5000 / portTICK_PERIOD_MS);
 
   //if (in) count_in++;
   //count_all++;
@@ -1053,8 +1076,9 @@ ChessEngine::generate_steps(int pos_idx)
   chess_engine_task.retrieve_steps(pos_idx);
 
   for (int i = 0; i < pos[pos_idx].steps_count; i++) {
-    pos[pos_idx].steps[i].check  = CheckType::NONE;
-    pos[pos_idx].steps[i].weight = abs(pos[pos_idx].steps[i].f2);
+    pos[pos_idx].steps[i].same_col = pos[pos_idx].steps[i].same_row = false;
+    pos[pos_idx].steps[i].check    = CheckType::NONE;
+    pos[pos_idx].steps[i].weight   = abs(pos[pos_idx].steps[i].f2);
     if (pos[pos_idx].steps[i].type > MoveType::CASTLE_QUEENSIDE) {
       pos[pos_idx].steps[i].weight += fig_weight[(int)(pos[pos_idx].steps[i].type) - 2];
     }
@@ -1073,7 +1097,7 @@ ChessEngine::generate_steps(int pos_idx)
     //if (action(pos[pos_idx].steps[i])) {
     //  pos[pos_idx].steps[i].weight=1;
     //  show_position();
-    //    Serial.println("="+Stepo_str(pos[pos_idx].steps[i]));
+    //    Serial.println("="+step_to_str(pos[pos_idx].steps[i]));
     //   delay(20000);
     //}
     //}
@@ -1087,6 +1111,17 @@ ChessEngine::generate_steps(int pos_idx)
   //halt=true;
   //show_steps(0);
 
+  for (int i = 0; i < pos[pos_idx].steps_count - 1; i++) {
+    Step * s1 = &pos[pos_idx].steps[i];
+    s1->same_col = s1->same_row = false;
+    for (int j = i + 1; j < pos[pos_idx].steps_count; j++) {
+      Step * s2 = &pos[pos_idx].steps[j];
+      if ((s1->f1 == s2->f1) && (s1->c1 != s2->c1) && (s1->c2 == s2->c2)) {
+        s2->same_col = s1->same_col = (column[s1->c1] == column[s2->c1]);
+        s2->same_row = s1->same_row = (   row[s1->c1] ==    row[s2->c1]);
+      }
+    }
+  }
 }
 
 int 
@@ -1270,12 +1305,13 @@ ChessEngine::quiescence(int pos_idx, int alpha, int beta, int depth_left)
     }
     checked = (pos[pos_idx].white_move) ? check_on_white_king() : check_on_black_king();
     if (checked) {
-      back_step(pos_idx, pos[pos_idx].steps[i]);  //  -
+      back_step(pos_idx, pos[pos_idx].steps[i]); 
       continue;
     }
 
     if (check && (depth_left == 1) && (pos_idx < MAXDEPTH - 1)) depth_left++;
 
+    assert(i <= MAXSTEPS);
     pos[pos_idx].cur_step = i;
 
     move_pos(pos_idx, pos[pos_idx].steps[i]);
@@ -1315,12 +1351,14 @@ ChessEngine::alpha_beta(int pos_idx, int alpha, int beta, int depth_left)
       pos[pos_idx + 1].white_castle_queenside_ok = pos[pos_idx].white_castle_queenside_ok;
       pos[pos_idx + 1].black_castle_kingside_ok  = pos[pos_idx].black_castle_kingside_ok;
       pos[pos_idx + 1].black_castle_queenside_ok = pos[pos_idx].black_castle_queenside_ok;
-      pos[pos_idx + 1].weight_white = pos[pos_idx].weight_white;
-      pos[pos_idx + 1].weight_black = pos[pos_idx].weight_black;
-      pos[pos_idx + 1].weight_both  = pos[pos_idx].weight_both;
-      pos[pos_idx + 1].en_passant_pp = 0;
+      pos[pos_idx + 1].weight_white              = pos[pos_idx].weight_white;
+      pos[pos_idx + 1].weight_black              = pos[pos_idx].weight_black;
+      pos[pos_idx + 1].weight_both               = pos[pos_idx].weight_both;
+      pos[pos_idx + 1].en_passant_pp             = 0;
+
       pos[pos_idx].cur_step           = MAXSTEPS;
       pos[pos_idx].steps[MAXSTEPS].f2 = NO_FIG;
+
       int tmpz = -alpha_beta(pos_idx + 1, -beta, -beta + 1, depth_left - 3);
       zero = false;
       if (tmpz >= beta) return beta;
@@ -1350,18 +1388,19 @@ ChessEngine::alpha_beta(int pos_idx, int alpha, int beta, int depth_left)
       continue;
     }
 
+    assert(i <= MAXSTEPS);
     pos[pos_idx].cur_step = i;
     move_pos(pos_idx, pos[pos_idx].steps[i]);
 
     if (TRACE > 0) {
       if (pos_idx == 0) {
-        std::cout << Stepo_str(pos[0].steps[i]) << "  " << i + 1 << '/' << pos[0].steps_count;
+        std::cout << step_to_str(pos[0].steps[i]) << "  " << i + 1 << '/' << pos[0].steps_count;
         //if (pos[0].steps[i].weight<-9000) { Serial.println(F(" checkmate")); continue; }
       } 
       else if (TRACE > pos_idx) {
         std::cout << std::endl;
         for (int ll = 0; ll < pos_idx; ll++) std::cout << "      ";
-        std::cout << pos_idx + 1 << "- " << Stepo_str(pos[pos_idx].steps[i]);
+        std::cout << pos_idx + 1 << "- " << step_to_str(pos[pos_idx].steps[i]);
       }
     } //TRACE
 
@@ -1442,7 +1481,7 @@ ChessEngine::print_best(int dep)
   }
   last_best_depth = dep;
   last_best_step = pos[0].best;
-  std::string st = Stepo_str(pos[0].best);
+  std::string st = step_to_str(pos[0].best);
   std::cout << (pos[0].white_move ? "1." : "1...") << st;
 
   for (std::size_t i = 0; i < 10 - st.length(); i++) std::cout << ' ';
@@ -1788,7 +1827,7 @@ ChessEngine::export_pos_to_fen(int pos_idx)
 }
 
 std::string 
-ChessEngine::Stepo_str(const Step & step)
+ChessEngine::step_to_str(const Step & step)
 {
   std::ostringstream stream;
 
@@ -1797,13 +1836,28 @@ ChessEngine::Stepo_str(const Step & step)
   else if (step.type == MoveType::CASTLE_QUEENSIDE) stream << "0-0-0";
   else  {
     if (abs(step.f1) > PAWN) stream << fig_symb[abs(step.f1)];
-    stream << board_idx_to_str(step.c1);
-    stream << ((step.f2 == NO_FIG) ? "-" : "x");
+    // stream << board_idx_to_str(step.c1);
+    // stream << ((step.f2 == NO_FIG) ? "-" : "x");
+    if (step.f2 != NO_FIG) {
+      if (abs(step.f1) == PAWN) {
+        stream << (char)('a' + column[step.c1] - 1);
+        if (step.same_col) stream << (char)('0' + row[step.c1]);
+      }
+      else {
+        if (step.same_row) stream << (char)('a' + column[step.c1] - 1);
+        if (step.same_col) stream << (char)('0' + row[step.c1]);
+      }
+      stream << 'x';
+    }
+    else if (abs(step.f1) > PAWN) {
+      if (step.same_row) stream << (char)('a' + column[step.c1] - 1);
+      if (step.same_col) stream << (char)('0' + row[step.c1]);
+    }
     stream << board_idx_to_str(step.c2);
   }
-  if (step.type > MoveType::CASTLE_QUEENSIDE ) stream << "=" << fig_symb[(int)step.type - 2];
-  if      (step.check == CheckType::CHECK    ) stream << "+";
-  else if (step.check == CheckType::CHECKMATE) stream << "#";
+  if (step.type > MoveType::CASTLE_QUEENSIDE ) stream << '=' << fig_symb[(int)step.type - 2];
+  if      (step.check == CheckType::CHECK    ) stream << '+';
+  else if (step.check == CheckType::CHECKMATE) stream << '#';
 
   return stream.str();
 }
@@ -1842,7 +1896,7 @@ chess_task_start()
 }
 
 void
-ChessEngine::setup()
+ChessEngine::setup(int32_t time)
 { 
   #if CHESS_LINUX_BUILD
     mq_unlink("/chess_task");
@@ -1859,9 +1913,18 @@ ChessEngine::setup()
     task_queue      = xQueueCreate(5, sizeof(TaskQueueData));
     engine_queue    = xQueueCreate(5, sizeof(EngineQueueData));
 
-    auto cfg = create_config("chessTask", 0, 10 * 1024, configMAX_PRIORITIES - 2);
+    auto cfg = create_config("chessTask", 1, 20 * 1024, configMAX_PRIORITIES - 2);
     cfg.inherit_cfg = true;
     esp_pthread_set_cfg(&cfg);
     chess_task = std::thread(chess_task_start);
   #endif
+
+  set_engine_time(time);
+}
+
+void 
+ChessEngine::set_engine_time(int32_t time) 
+{ 
+  time_limit = 1000L * time; 
+  std::cout << "Time limit: " << time_limit << std::endl;
 }
