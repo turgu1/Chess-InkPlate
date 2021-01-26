@@ -132,8 +132,11 @@ BoardController::new_game(bool user_play_white)
   game_over    = false;
   game_started = true;
 
+  chess_engine.new_game();
+
   chess_engine.load_board_from_fen(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    "8/8/8/8/5k2/7K/8/4r3 w KQkq -"
   );
 
   game_board = chess_engine.get_board();
@@ -188,11 +191,31 @@ BoardController::engine_play()
       }
     }
 
+    if (game_steps[game_play_number].check == CheckType::CHECKMATE) {
+      game_over = true;
+      msg = "CHECKMATE!!";
+    }
+
     pos[0] = pos[1];
     game_play_number++;
   } 
   else {
-    msg = "ERROR!";
+    EndOfGameType the_end = chess_engine.get_end_of_game_type();
+    switch (the_end) {
+      case EndOfGameType::NONE:
+        msg = "ERROR!";
+        break;
+
+      case EndOfGameType::CHECKMATE:
+        msg = "CHECKMATE!!";
+        game_over = true;
+        break;
+
+      case EndOfGameType::PAT:
+        msg = "PAT!!";
+        game_over = true;
+        break;
+    }
   }
 }
 
@@ -211,18 +234,19 @@ BoardController::play(Pos pos_from, Pos pos_to)
   f1 = (*game_board)[c1];
   f2 = (*game_board)[c2];
 
-  std::cout << "=====> f1:" << +f1 << " f2:" << +f2 << " c1:" << +c1 << " c2:" << +c2 << std::endl;
+  // std::cout << "=====> f1:" << +f1 << " f2:" << +f2 << " c1:" << +c1 << " c2:" << +c2 << std::endl;
 
   pos[0].white_move = game_play_white;
   chess_engine.generate_steps(0);
 
-  int step_idx;
   bool found = false;
 
-  for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
-    Step * s = &pos[0].steps[step_idx];
-    std::cout << "---> f1:" << +s->f1 << " f2:" << +s->f2 << " c1:" << +s->c1 << " c2:" << +s->c2 << std::endl;
-  }
+  int step_idx;
+
+  // for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
+  //   Step * s = &pos[0].steps[step_idx];
+  //   std::cout << "---> f1:" << +s->f1 << " f2:" << +s->f2 << " c1:" << +s->c1 << " c2:" << +s->c2 << std::endl;
+  // }
 
   for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
     Step * s = &pos[0].steps[step_idx];
@@ -231,6 +255,7 @@ BoardController::play(Pos pos_from, Pos pos_to)
       break;
     }
   }
+
 
   // best_move[0].c1 = -1;
   // chess_engine.getbm(0, s.str());
@@ -245,29 +270,41 @@ BoardController::play(Pos pos_from, Pos pos_to)
   //   }
 
   if (found) {
+
     best_move[0] = pos[0].steps[step_idx];
     
     pos[0].cur_step = step_idx;
     chess_engine.move_step(0, pos[0].steps[pos[0].cur_step]);
-    chess_engine. move_pos(0, pos[0].steps[pos[0].cur_step]);
 
-    LOG_D("make move: %s", chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]).c_str());
-    
-    game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
-
-    if (game_steps[game_play_number].check == CheckType::NONE) {
-      if (( pos[0].white_move && chess_engine.check_on_black_king()) ||
-          (!pos[0].white_move && chess_engine.check_on_white_king())) {
-        game_steps[game_play_number].check = CheckType::CHECK;
-      }
+    if (( pos[0].white_move && chess_engine.check_on_white_king()) ||
+        (!pos[0].white_move && chess_engine.check_on_black_king())) {
+      chess_engine.back_step(0, pos[0].steps[pos[0].cur_step]);
+      msg = "Move is illegal. Please retry.";
     }
+    else {
+      chess_engine. move_pos(0, pos[0].steps[pos[0].cur_step]);
 
-    pos[1].white_move = !pos[0].white_move;
-    pos[0]            =  pos[1];
+      LOG_D("make move: %s", chess_engine.step_to_str(pos[0].steps[pos[0].cur_step]).c_str());
 
-    game_play_number++;
+      game_steps[game_play_number] = pos[0].steps[pos[0].cur_step];
 
-    engine_play();
+      if (game_steps[game_play_number].check == CheckType::NONE) {
+        if (( pos[0].white_move && chess_engine.check_on_black_king()) ||
+            (!pos[0].white_move && chess_engine.check_on_white_king())) {
+          pos[0].white_move = !pos[0].white_move;
+          game_steps[game_play_number].check = 
+            (chess_engine.is_checkmate() ? CheckType::CHECKMATE : CheckType::CHECK);
+          pos[0].white_move = !pos[0].white_move;
+        }
+      }
+
+      pos[1].white_move = !pos[0].white_move;
+      pos[0]            =  pos[1];
+
+      game_play_number++;
+
+      engine_play();
+    }
   } 
   else {
     msg = "Move is illegal. Please retry.";

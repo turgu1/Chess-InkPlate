@@ -36,7 +36,7 @@ The `SDCard` folder under GitHub reflects what the micro-SD Card should look lik
 
 ### Fonts cleanup
 
-All fonts have been subsetted to Latin-1 plus some usual characters. The `fonts/orig` folder in the GitHub project contains all original fonts that are processed using the script `fonts/subsetter.sh`. This script uses the Python **pyftsubset** tool that is part of the **fontTools** package. To install the tool, you need to execute the following command:
+All (non-chess) fonts have been subsetted to Latin-1 plus some usual characters. The `fonts/orig` folder in the GitHub project contains all original fonts that are processed using the script `fonts/subsetter.sh`. This script uses the Python **pyftsubset** tool that is part of the **fontTools** package. To install the tool, you need to execute the following command:
 
 ```bash
 $ pip install fonttools brotli zopfli
@@ -79,7 +79,6 @@ The following are the libraries currently in use by the application:
 The following is imported C header and source files, that implement some algorithms:
 
 - [FreeType](https://www.freetype.org) (Parse, decode, and rasterize characters from TrueType fonts) A version of the library has been loaded in folder `freetype-2.10.4/` and compiled with specific options for the ESP32. See sub-section **FreeType library compilation for ESP32** below for further explanations.
-
 
 ### FreeType library compilation for ESP32
 

@@ -192,9 +192,17 @@ BoardViewer::show_board(bool        play_white,
   if (step_count > 0) {
     stream.str(""); stream.clear();
 
-    for (int i = 0; i < step_count; i++) {
+    int first = 0;
+    if (step_count >= 50) {
+      first = step_count - ((step_count % 50) + 25);
+    }
+    for (int i = first; i < step_count; i++) {
       if ((i & 1) == 0) stream << ((i / 2) + 1) << '.';
       stream << chess_engine.step_to_str(steps[i]) << ' ';
+    }
+
+    if (steps[step_count-1].check == CheckType::CHECKMATE) {
+      stream <<  ((step_count & 1) ? " 1-0" : " 0-1"); 
     }
 
     fmt.font_index  =  1;

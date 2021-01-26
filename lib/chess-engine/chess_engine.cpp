@@ -1,7 +1,7 @@
 #define CHESS_ENGINE 1
 #include "chess_engine.hpp"
 
-#define _STEPS_ 1
+#define _STEPS_   1
 #include "chess_engine_steps.hpp"
 
 #define _WEIGHTS_ 1
@@ -30,8 +30,8 @@ static bool          endgame = false;
 
 static Position pos[MAXDEPTH + 1];
 
-enum class TaskReq : int8_t { EXEC, STOP };
-enum class EngineReq  : int8_t { COMPLETED };
+enum class TaskReq    : int8_t { EXEC, STOP };
+enum class EngineReq  : int8_t { COMPLETED  };
 
 struct TaskQueueData {
   TaskReq req;
@@ -48,7 +48,7 @@ struct EngineQueueData {
   static mq_attr task_attr      = { 0, 5, sizeof(  TaskQueueData), 0 };
   static mq_attr engine_attr    = { 0, 5, sizeof(EngineQueueData), 0 };
 
-  #define QUEUE_SEND(q, m, t)        mq_send(q, (const char *) &m, sizeof(m),       1)
+  #define    QUEUE_SEND(q, m, t)     mq_send(q, (const char *) &m, sizeof(m),       1)
   #define QUEUE_RECEIVE(q, m, t)  mq_receive(q,       (char *) &m, sizeof(m), nullptr)
 #else
   #include <esp_pthread.h>
@@ -66,7 +66,7 @@ struct EngineQueueData {
   static xQueueHandle task_queue;
   static xQueueHandle engine_queue;
   
-  #define QUEUE_SEND(q, m, t)        xQueueSend(q, &m, t)
+  #define    QUEUE_SEND(q, m, t)  xQueueSend(q, &m, t)
   #define QUEUE_RECEIVE(q, m, t)  while (!xQueueReceive(q, &m, t)) std::this_thread::yield()
 #endif
 
@@ -1504,6 +1504,23 @@ ChessEngine::print_best(int dep)
   return ret;
 }
 
+bool
+ChessEngine::is_checkmate()
+{
+  generate_steps(0);
+  
+  for (int i = 0; i < pos[0].steps_count; i++) {
+    move_step(0, pos[0].steps[i]);
+
+    bool check = (pos[0].white_move) ? check_on_white_king() : check_on_black_king();
+    back_step(0, pos[0].steps[i]);
+
+    if (!check) return false;
+  }
+
+  return true;
+}
+
 bool 
 ChessEngine::solve_step()
 {
@@ -1518,7 +1535,7 @@ ChessEngine::solve_step()
 
   for (int i = 1; i < MAXDEPTH; i++) {
     if (i % 2) pos[i].white_move = !pos[0].white_move;
-    else pos[i].white_move = pos[0].white_move;
+    else       pos[i].white_move =  pos[0].white_move;
     pos[i].en_passant_pp = 0;
   }
 
@@ -1582,11 +1599,10 @@ ChessEngine::solve_step()
   bool check;
   int  samebest = 0;
 
-  for (int i = 0; i < pos[0].steps_count; i++) { //
+  for (int i = 0; i < pos[0].steps_count; i++) {
     move_step(0, pos[0].steps[i]);
 
-    if (pos[0].white_move) check = check_on_white_king();
-    else check = check_on_black_king();
+    check = (pos[0].white_move) ? check_on_white_king() : check_on_black_king();
 
     pos[0].check_on_table = check;
 
@@ -1598,6 +1614,7 @@ ChessEngine::solve_step()
   }
 
   if (legal == 0) {
+    end_of_game = (pos[0].check_on_table) ? EndOfGameType::CHECKMATE : EndOfGameType::PAT;
     std::cout << ((pos[0].check_on_table) ? " CHECKMATE!" : " PAT!") << std::endl;
     return true;
   }

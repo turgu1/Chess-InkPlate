@@ -70,6 +70,9 @@ class ChessEngine
             endgame(false) { }
 
     void                      setup(int32_t time);
+
+    void                   new_game() { end_of_game = EndOfGameType::NONE; }
+
     void            set_engine_time(int32_t time);
     void             generate_steps(int pos_idx);
 
@@ -92,6 +95,10 @@ class ChessEngine
 
     bool        check_on_white_king();
     bool        check_on_black_king();
+
+    bool               is_checkmate();
+
+    inline EndOfGameType get_end_of_game_type() { return end_of_game; }
 
 #if 0
     void                      getbm(int n, Step ep);
@@ -152,6 +159,7 @@ class ChessEngine
     Step   last_best_step;
     Step   best_move[MAXEPD];
 
+    EndOfGameType end_of_game;
 };
 
 #if CHESS_ENGINE

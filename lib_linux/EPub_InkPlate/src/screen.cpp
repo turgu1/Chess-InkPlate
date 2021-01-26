@@ -213,11 +213,12 @@ void
 Screen::update(bool no_full)
 {
   gtk_image_set_from_pixbuf(GTK_IMAGE(id.image), gtk_image_get_pixbuf(id.image));
-  // gtk_widget_queue_draw(window);
-  g_main_context_iteration(nullptr, false);
-  while (g_main_context_pending(nullptr)) {
-    g_main_context_iteration(nullptr, false);
-  }
+  g_idle_add((GSourceFunc)gtk_widget_queue_draw,(void*)window);
+  
+  // g_main_context_iteration(nullptr, false);
+  // while (g_main_context_pending(nullptr)) {
+  //   g_main_context_iteration(nullptr, false);
+  // }
 }
 
 static void 
