@@ -3,7 +3,7 @@
 // MIT License. Look at file licenses.txt for details.
 
 #define __BOARD_CONTROLLER__ 1
-#include "controllers/board_controller.hpp"
+#include "controllers/game_controller.hpp"
 
 #include "controllers/app_controller.hpp"
 #include "viewers/board_viewer.hpp"
@@ -24,7 +24,7 @@ static inline bool is_white_fig(int8_t fig) { return fig > 0; }
 static inline bool is_black_fig(int8_t fig) { return fig < 0; }
 
 bool 
-BoardController::load()
+GameController::load()
 {
   std::string   filename = MAIN_FOLDER "/current_game.save";
   std::ifstream file(filename, std::ios::in | std::ios::binary);
@@ -66,7 +66,7 @@ BoardController::load()
 }
 
 void 
-BoardController::save()
+GameController::save()
 {
   std::string   filename = MAIN_FOLDER "/current_game.save";
   std::ofstream file(filename, std::ios::out | std::ios::binary);
@@ -102,7 +102,7 @@ BoardController::save()
 }
 
 void 
-BoardController::replay()
+GameController::replay()
 {
   Position * pos = chess_engine.get_pos(0);
   game_board     = chess_engine.get_board();
@@ -127,7 +127,7 @@ BoardController::replay()
 }
 
 void
-BoardController::new_game(bool user_play_white)
+GameController::new_game(bool user_play_white)
 {
   game_over    = false;
   game_started = true;
@@ -135,8 +135,8 @@ BoardController::new_game(bool user_play_white)
   chess_engine.new_game();
 
   chess_engine.load_board_from_fen(
-    // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
-    "8/8/8/8/5k2/7K/8/4r3 w KQkq -"
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    // "8/8/8/8/5k2/7K/8/4r3 w KQkq -"
   );
 
   game_board = chess_engine.get_board();
@@ -151,7 +151,7 @@ BoardController::new_game(bool user_play_white)
 }
 
 void
-BoardController::engine_play()
+GameController::engine_play()
 {
   board_viewer.show_board(
     game_play_white, Pos(-1, -1), Pos(-1, -1), 
@@ -215,12 +215,17 @@ BoardController::engine_play()
         msg = "PAT!!";
         game_over = true;
         break;
+
+      case EndOfGameType::DRAW:
+        msg = "DRAW!!";
+        game_over = true;
+        break;
     }
   }
 }
 
 void
-BoardController::play(Pos pos_from, Pos pos_to)
+GameController::play(Pos pos_from, Pos pos_to)
 {
   Position * pos       = chess_engine.get_pos(0);
   Step     * best_move = chess_engine.get_best_move(0);
@@ -312,7 +317,7 @@ BoardController::play(Pos pos_from, Pos pos_to)
 }
 
 void 
-BoardController::enter()
+GameController::enter()
 { 
   if (!game_started) {
     if (load()) {
@@ -334,13 +339,13 @@ BoardController::enter()
 }
 
 void 
-BoardController::leave(bool going_to_deep_sleep)
+GameController::leave(bool going_to_deep_sleep)
 {
   if (going_to_deep_sleep) save();
 }
 
 void 
-BoardController::key_event(EventMgr::KeyEvent key)
+GameController::key_event(EventMgr::KeyEvent key)
 {
   switch (key) {
     case EventMgr::KeyEvent::PREV:

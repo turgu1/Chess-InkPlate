@@ -6,7 +6,7 @@
 #include "controllers/promotion_controller.hpp"
 
 #include "controllers/app_controller.hpp"
-#include "controllers/board_controller.hpp"
+#include "controllers/game_controller.hpp"
 #include "viewers/menu_viewer.hpp"
 #include "models/fonts.hpp"
 #include "chess_engine_types.hpp"
@@ -18,28 +18,28 @@
 static void
 promote_to_queen()
 {
-  board_controller.set_promotion_to(MoveType::PROMOTE_TO_QUEEN);
+  game_controller.set_promotion_to(MoveType::PROMOTE_TO_QUEEN);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
 static void
 promote_to_rook()
 {
-  board_controller.set_promotion_to(MoveType::PROMOTE_TO_ROOK);
+  game_controller.set_promotion_to(MoveType::PROMOTE_TO_ROOK);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
 static void
 promote_to_bishop()
 {
-  board_controller.set_promotion_to(MoveType::PROMOTE_TO_BISHOP);
+  game_controller.set_promotion_to(MoveType::PROMOTE_TO_BISHOP);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
 static void
 promote_to_knight()
 {
-  board_controller.set_promotion_to(MoveType::PROMOTE_TO_KNIGHT);
+  game_controller.set_promotion_to(MoveType::PROMOTE_TO_KNIGHT);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
@@ -62,7 +62,7 @@ static MenuViewer::MenuEntry black_menu[5] = {
 void 
 PromotionController::enter()
 {
-  menu_viewer.show(board_controller.is_game_play_white() ? white_menu : black_menu);
+  menu_viewer.show(game_controller.is_game_play_white() ? white_menu : black_menu);
 }
 
 void 

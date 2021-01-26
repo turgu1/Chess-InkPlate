@@ -1,8 +1,12 @@
+// Copyright (c) 2021 Guy Turcotte
+//
+// MIT License. Look at file licenses.txt for details.
+
 #define __COMMON_ACTIONS__ 1
 #include "controllers/common_actions.hpp"
 
 #include "controllers/app_controller.hpp"
-#include "controllers/board_controller.hpp"
+#include "controllers/game_controller.hpp"
 #include "controllers/event_mgr.hpp"
 #include "viewers/msg_viewer.hpp"
 

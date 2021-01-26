@@ -1,3 +1,12 @@
+// ESP32 chess engine 1.0
+// Sergey Urusov, ususovsv@gmail.com
+//
+// Edited and modified by Guy Turcotte
+// for inclusion in the Chess-InkPlate project
+// using the ESP-IDF framework
+//
+// (c) January 2021 - GPL-3.0
+
 #pragma once
 
 #include <cinttypes>
@@ -19,7 +28,7 @@ const int8_t KING   = 6;
 enum class CheckType : int8_t { NONE, CHECK, CHECKMATE };
 enum class MoveType  : int8_t { UNKNOWN = -1, SIMPLE, EN_PASSANT, CASTLE_KINGSIDE, CASTLE_QUEENSIDE, 
                                 PROMOTE_TO_KNIGHT, PROMOTE_TO_BISHOP, PROMOTE_TO_ROOK, PROMOTE_TO_QUEEN };
-enum class EndOfGameType : int8_t { NONE, CHECKMATE, PAT };
+enum class EndOfGameType : int8_t { NONE, CHECKMATE, PAT, DRAW };
 
 const int fig_weight[] = { 0, 100, 320, 330, 500, 900, 0 };
 const char  fig_symb[] = "  NBRQK";

@@ -9,10 +9,10 @@
 
 #include "chess_engine.hpp"
 
-class BoardController
+class GameController
 {
   public:
-    BoardController() : 
+    GameController() : 
                          msg(""),
                 game_started(false  ),
              game_play_white(true   ),
@@ -30,7 +30,7 @@ class BoardController
     void                save();
 
   private:
-    static constexpr char const * TAG = "BoardController";
+    static constexpr char const * TAG = "GameController";
     static constexpr uint8_t      SAVED_GAME_FILE_VERSION = 1;
 
     std::string  msg;
@@ -55,7 +55,7 @@ class BoardController
 };
 
 #if __BOARD_CONTROLLER__
-  BoardController board_controller;
+  GameController game_controller;
 #else
-  extern BoardController board_controller;
+  extern GameController game_controller;
 #endif

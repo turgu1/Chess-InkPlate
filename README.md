@@ -2,9 +2,11 @@
 
 ## Last news
 
-(Updated 2021.01.22)
+(Updated 2021.01.26)
 
-This is NOT ready. A lot still need to be done to complete the developement of the first version:
+This is a simple chess application for the InkPlate devices. It is based on the chess engine developped by Sergey Urusov as an Arduino project. I edited and ported the engine for inclusion under the ESP-IDF framework. You can find Sergey's original code [here](https://www.hackster.io/Sergey_Urusov).
+
+This is NOT ready. Some work is still to be done to complete the developement of the first version:
 
 - [x] Extraction of the Chess Engine portion required from the Arduino code
 - [x] Transformation of the Engine in C++
@@ -17,9 +19,11 @@ This is NOT ready. A lot still need to be done to complete the developement of t
 - [x] Menu for main actions
 - [x] Menu for chess font selection
 - [x] Menu for pawn promotion 
+- [ ] Pawn promotion integration
 - [x] Current game save and load on deep sleep
-- [ ] Old games saved
-
+- [ ] Watch Dog management
+- [ ] Deep Sleep management
+  
 Potential features for v2.0:
 
 - [ ] Access to external chess engines
@@ -27,6 +31,7 @@ Potential features for v2.0:
 - [ ] Games database display and interaction
 - [ ] Training (puzzle)
 - [ ] Play against other users through internet chess servers
+- [ ] Played games save/load/replay
 
 ### Runtime environment
 

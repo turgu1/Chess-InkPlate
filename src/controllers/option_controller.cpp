@@ -7,7 +7,7 @@
 
 #include "controllers/common_actions.hpp"
 #include "controllers/app_controller.hpp"
-#include "controllers/board_controller.hpp"
+#include "controllers/game_controller.hpp"
 #include "viewers/menu_viewer.hpp"
 #include "viewers/msg_viewer.hpp"
 #include "viewers/form_viewer.hpp"
@@ -45,7 +45,7 @@ static FormViewer::FormEntry main_params_form_entries[MAIN_FORM_SIZE] = {
 
 static constexpr int8_t FONT_FORM_SIZE = 2;
 static FormViewer::FormEntry chess_params_form_entries[FONT_FORM_SIZE] = {
-  { "Engine Work Duration :", &engine_time,        4, FormViewer::engine_time_choices, FormViewer::FormEntryType::HORIZONTAL_CHOICES },
+  { "Engine Work Duration :", &engine_time,        5, FormViewer::engine_time_choices, FormViewer::FormEntryType::HORIZONTAL_CHOICES },
   { "Chess Font :",           &chess_font,         7, FormViewer::font_choices,        FormViewer::FormEntryType::VERTICAL_CHOICES   }
 };
 
@@ -109,14 +109,14 @@ wifi_mode()
 void
 new_game_play_white()
 {
-  board_controller.new_game(true);
+  game_controller.new_game(true);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
 void
 new_game_play_black()
 {
-  board_controller.new_game(false);
+  game_controller.new_game(false);
   app_controller.set_controller(AppController::Ctrl::LAST);
 }
 
@@ -143,7 +143,7 @@ OptionController::enter()
 void 
 OptionController::leave(bool going_to_deep_sleep)
 {
-  if (going_to_deep_sleep) board_controller.save();
+  if (going_to_deep_sleep) game_controller.save();
 }
 
 void 

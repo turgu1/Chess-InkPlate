@@ -1,3 +1,12 @@
+// ESP32 chess engine 1.0
+// Sergey Urusov, ususovsv@gmail.com
+//
+// Edited and modified by Guy Turcotte
+// for inclusion in the Chess-InkPlate project
+// using the ESP-IDF framework
+//
+// (c) January 2021 - GPL-3.0
+
 #define CHESS_ENGINE 1
 #include "chess_engine.hpp"
 
@@ -1542,7 +1551,8 @@ ChessEngine::solve_step()
   start_time = std::chrono::steady_clock::now();
 
   if (is_draw()) {
-    std::cout << " DRAW!" << std::endl;  //
+    std::cout << " DRAW!" << std::endl;
+    end_of_game = EndOfGameType::DRAW;
     return true;
   }
 

@@ -3,7 +3,7 @@
 // MIT License. Look at file licenses.txt for details.
 
 #define __BOARD_VIEWER__ 1
-#include "controllers/board_controller.hpp"
+#include "controllers/game_controller.hpp"
 #include "viewers/board_viewer.hpp"
 
 #include "models/ttf2.hpp"
