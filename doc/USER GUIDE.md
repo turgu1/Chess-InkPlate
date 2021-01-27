@@ -106,7 +106,7 @@ As indicated in section 2.2, the Chess Parameters form allows for the modificati
 
 The following items are displayed:
 
-- **Engine Work Duration** - Options: 8, 10, 12, 15 points. This item will select the size of the characters to be presented on the screen, in points (1 point = ~1/72 of an inch). 
+- **Engine Work Duration** - Options: 15, 30 seconds, 1, 2 or 5 minutes. This is limiting the time used by the chess engine to compute it's next move. 
 - **Chess font** - Seven fonts are supplied with the application for the chess pieces and board. This item permits the selection of the font to be used. 
    
 ### 2.5 The Pawn Promotion
