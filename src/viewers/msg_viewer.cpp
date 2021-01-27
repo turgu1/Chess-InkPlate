@@ -15,7 +15,7 @@
   #include "inkplate_platform.hpp"
 #endif
 
-char MsgViewer::icon_char[5] = { 'I',  '!', 'H', 'E', 'S' };
+char MsgViewer::icon_char[5] = { 'I',  '!', 'H', 'n', 'S' };
 
 void MsgViewer::show(
   Severity severity, 
@@ -75,10 +75,10 @@ void MsgViewer::show(
     Pos(((Screen::WIDTH - width ) >> 1) + 2, ((Screen::HEIGHT - HEIGHT) >> 1) + 2));
 
   TTF * font = fonts.get(0);
-  TTF::BitmapGlyph * glyph = font->get_glyph(icon_char[severity], 24);
+  TTF::BitmapGlyph * glyph = font->get_glyph(icon_char[(int)severity], 24);
 
   page.put_char_at(
-    icon_char[severity], 
+    icon_char[(int)severity], 
     Pos(((Screen::WIDTH  - width ) >> 1) + 50 - (glyph->dim.width >> 1), ( Screen::HEIGHT >> 1) + 20),
     fmt);
 
@@ -260,7 +260,7 @@ MsgViewer::out_of_memory(const char * raison)
     }
   #endif
 
-  show(ALERT, true, true, "OUT OF MEMORY!!",
+  show(Severity::ALERT, true, true, "OUT OF MEMORY!!",
     "It's a bit sad that the device is now out of "
     "memory to continue. The reason: %s. "
     "The device is now entering into Deep Sleep. "

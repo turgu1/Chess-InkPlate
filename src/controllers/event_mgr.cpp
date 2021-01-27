@@ -217,7 +217,7 @@ EventMgr::set_orientation(Screen::Orientation orient)
             
             LOG_D("Timed out on Light Sleep. Going now to Deep Sleep");
             msg_viewer.show(
-              MsgViewer::INFO, 
+              MsgViewer::Severity::INFO, 
               false, true, 
               "Deep Sleep", 
               "Timeout period exceeded (%d minutes). The device is now "

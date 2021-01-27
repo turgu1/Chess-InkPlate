@@ -18,6 +18,7 @@ class GameController
              game_play_white(true   ),
                   game_board(nullptr),
                    game_over(false  ),
+          complete_user_move(false  ),
          promotion_move_type(MoveType::UNKNOWN) { }
     
     void           key_event(EventMgr::KeyEvent key);
@@ -45,13 +46,15 @@ class GameController
     bool         game_play_white;
     Board      * game_board;
     bool         game_over;
+    bool         complete_user_move;
 
     MoveType     promotion_move_type;
 
-    void engine_play();
-    void        play(Pos from_pos, Pos to_pos);
-    void      replay();
-    bool        load();
+    void   engine_play();
+    void          play(Pos from_pos, Pos to_pos);
+    void        replay();
+    bool          load();
+    void complete_move(bool async);
 };
 
 #if __BOARD_CONTROLLER__

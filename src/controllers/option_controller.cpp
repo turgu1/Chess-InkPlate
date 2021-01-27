@@ -20,7 +20,6 @@
 
 // static int8_t boolean_value;
 
-static Screen::Orientation     orientation;
 static Screen::PixelResolution  resolution;
 static int8_t show_battery;
 static int8_t timeout;
@@ -29,24 +28,22 @@ static int8_t show_heap;
 static int8_t engine_time;
 // static int8_t ok;
 
-static Screen::Orientation     old_orientation;
 static Screen::PixelResolution  old_resolution;
 static int8_t old_chess_font;
 static int8_t old_engine_time;
 
-static constexpr int8_t MAIN_FORM_SIZE = 5;
+static constexpr int8_t MAIN_FORM_SIZE = 4;
 static FormViewer::FormEntry main_params_form_entries[MAIN_FORM_SIZE] = {
-  { "Minutes Before Sleeping :",  &timeout,                3, FormViewer::timeout_choices,     FormViewer::FormEntryType::HORIZONTAL_CHOICES },
-  { "Buttons Position :",         (int8_t *) &orientation, 3, FormViewer::orientation_choices, FormViewer::FormEntryType::VERTICAL_CHOICES   },
-  { "Pixel Resolution :",         (int8_t *) &resolution,  2, FormViewer::resolution_choices,  FormViewer::FormEntryType::HORIZONTAL_CHOICES },
-  { "Show Battery Level :",       &show_battery,           4, FormViewer::battery_visual,      FormViewer::FormEntryType::VERTICAL_CHOICES   },
-  { "Show Heap Size :",           &show_heap,              2, FormViewer::yes_no_choices,      FormViewer::FormEntryType::HORIZONTAL_CHOICES }
+  { "Minutes Before Sleeping :",  &timeout,                3, FormViewer::timeout_choices,    FormViewer::FormEntryType::HORIZONTAL_CHOICES },
+  { "Pixel Resolution :",         (int8_t *) &resolution,  2, FormViewer::resolution_choices, FormViewer::FormEntryType::HORIZONTAL_CHOICES },
+  { "Show Battery Level :",       &show_battery,           4, FormViewer::battery_visual,     FormViewer::FormEntryType::VERTICAL_CHOICES   },
+  { "Show Heap Size :",           &show_heap,              2, FormViewer::yes_no_choices,     FormViewer::FormEntryType::HORIZONTAL_CHOICES }
 };
 
 static constexpr int8_t FONT_FORM_SIZE = 2;
 static FormViewer::FormEntry chess_params_form_entries[FONT_FORM_SIZE] = {
-  { "Engine Work Duration :", &engine_time,        5, FormViewer::engine_time_choices, FormViewer::FormEntryType::HORIZONTAL_CHOICES },
-  { "Chess Font :",           &chess_font,         7, FormViewer::font_choices,        FormViewer::FormEntryType::VERTICAL_CHOICES   }
+  { "Engine Work Duration :", &engine_time, 5, FormViewer::engine_time_choices, FormViewer::FormEntryType::HORIZONTAL_CHOICES },
+  { "Chess Font :",           &chess_font,  7, FormViewer::font_choices,        FormViewer::FormEntryType::VERTICAL_CHOICES   }
 };
 
 extern bool start_web_server();
@@ -55,13 +52,11 @@ extern bool  stop_web_server();
 static void
 main_parameters()
 {
-  config.get(Config::Ident::ORIENTATION,      (int8_t *) &orientation);
   config.get(Config::Ident::PIXEL_RESOLUTION, (int8_t *) &resolution );
   config.get(Config::Ident::BATTERY,          &show_battery          );
   config.get(Config::Ident::SHOW_HEAP,        &show_heap             );
   config.get(Config::Ident::TIMEOUT,          &timeout               );
 
-  old_orientation = orientation;
   old_resolution  = resolution;
   // ok              = 0;
 
@@ -121,7 +116,7 @@ new_game_play_black()
 }
 
 static MenuViewer::MenuEntry menu[8] = {
-  { MenuViewer::Icon::RETURN,      "Return to the chess board",            CommonActions::return_to_last},
+  { MenuViewer::Icon::RETURN,      "Return to the chessboard",             CommonActions::return_to_last},
   { MenuViewer::Icon::W_KNIGHT,    "New game, play white",                 new_game_play_white          },
   { MenuViewer::Icon::B_KNIGHT,    "New game, play black",                 new_game_play_black          },
   { MenuViewer::Icon::MAIN_PARAMS, "Main parameters",                      main_parameters              },
@@ -153,7 +148,6 @@ OptionController::key_event(EventMgr::KeyEvent key)
     if (form_viewer.event(key)) {
       main_form_is_shown = false;
       // if (ok) {
-        config.put(Config::Ident::ORIENTATION,      (int8_t) orientation);
         config.put(Config::Ident::PIXEL_RESOLUTION, (int8_t) resolution );
         config.put(Config::Ident::BATTERY,          show_battery        );
         config.put(Config::Ident::SHOW_HEAP,        show_heap           );
@@ -165,8 +159,7 @@ OptionController::key_event(EventMgr::KeyEvent key)
           screen.set_pixel_resolution(resolution);
         }
 
-        if ((old_orientation != orientation) || 
-            (old_resolution  != resolution )) {
+        if (old_resolution  != resolution ) {
           menu_viewer.show(menu, 2, true);
         }
       // }
@@ -187,7 +180,7 @@ OptionController::key_event(EventMgr::KeyEvent key)
   }
   #if CHESS_INKPLATE_BUILD
     else if (wait_for_key_after_wifi) {
-      msg_viewer.show(MsgViewer::INFO, 
+      msg_viewer.show(MsgViewer::Severity::INFO, 
                       false, true, 
                       "Restarting", 
                       "The device is now restarting. Please wait.");

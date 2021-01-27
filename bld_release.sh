@@ -29,24 +29,15 @@ cp -r bin "$folder"
 
 cp -r SDCard "$folder"
 
-if [ -f "$folder/SDCard/books_dir.db" ]
+if [ -f "$folder/SDCard/current_game.save" ]
 then
-  rm "$folder/SDCard/books_dir.db"
+  rm "$folder/SDCard/current_game.save"
 fi
 
-if [ -f "$folder/SDCard/last_book.txt" ]
+if [ -f "$folder/SDCard/config.txt" ]
 then
-  rm "$folder/SDCard/last_book.txt"
+  rm $folder/SDCard/config.txt
 fi
-
-if [ -d "$folder/SDCard/books/temp" ]
-then
-  rm -rf "$folder/SDCard/books/temp"
-fi
-
-rm $folder/SDCard/books/*.locs
-rm $folder/SDCard/books/*.pars
-rm $folder/SDCard/config.txt
 
 cd doc
 ./gener.sh
@@ -54,8 +45,6 @@ cd ..
 
 cp "doc/USER GUIDE.pdf" "$folder"
 cp "doc/INSTALL.pdf" "$folder"
-
-cp adjust_size.sh "$folder"
 
 zip -r "$folder.zip" "$folder"
 

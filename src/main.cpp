@@ -65,18 +65,15 @@
     #endif
 
     if (fonts.setup()) {
-      
-      Screen::Orientation    orientation;
       Screen::PixelResolution resolution;
-      config.get(Config::Ident::ORIENTATION,      (int8_t *) &orientation);
       config.get(Config::Ident::PIXEL_RESOLUTION, (int8_t *) &resolution);
-      screen.setup(resolution, orientation);
+      screen.setup(resolution, Screen::Orientation::BOTTOM);
 
       event_mgr.setup();
-      event_mgr.set_orientation(orientation);
+      event_mgr.set_orientation(Screen::Orientation::BOTTOM);
 
       if (nvs_err != ESP_OK) {
-        msg_viewer.show(MsgViewer::ALERT, false, true, "Hardware Problem!",
+        msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Hardware Problem!",
           "Failed to initialise NVS Flash (%s). Entering Deep Sleep. Press a key to restart.",
            esp_err_to_name(nvs_err)
         );
@@ -86,7 +83,7 @@
       }
   
       if (inkplate_err) {
-        msg_viewer.show(MsgViewer::ALERT, false, true, "Hardware Problem!",
+        msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Hardware Problem!",
           "Unable to initialize the InkPlate drivers. Entering Deep Sleep. Press a key to restart."
         );
         ESP::delay(500);
@@ -94,23 +91,23 @@
       }
 
       if (config_err) {
-        msg_viewer.show(MsgViewer::ALERT, false, true, "Configuration Problem!",
+        msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Configuration Problem!",
           "Unable to read/save configuration file. Entering Deep Sleep. Press a key to restart."
         );
         ESP::delay(500);
         inkplate_platform.deep_sleep();
       }
 
-      int32_t time;
-      config.get(Config::Ident::ENGINE_TIME, &time);
+      int8_t time_limit;
+      config.get(Config::Ident::ENGINE_TIME, &time_limit);
 
-      chess_engine.setup(time * 15);
+      chess_engine.setup(time_limit * 15);
 
       app_controller.start();
     }
     else {
       LOG_E("Font loading error.");
-      msg_viewer.show(MsgViewer::ALERT, false, true, "Font Loading Problem!",
+      msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Font Loading Problem!",
         "Unable to read required fonts. Entering Deep Sleep. Press a key to restart."
       );
       ESP::delay(500);
@@ -169,16 +166,14 @@
     
     if (fonts.setup()) {
 
-      Screen::Orientation    orientation;
       Screen::PixelResolution resolution;
-      config.get(Config::Ident::ORIENTATION,      (int8_t *) &orientation);
       config.get(Config::Ident::PIXEL_RESOLUTION, (int8_t *) &resolution );
-      screen.setup(resolution, orientation);
+      screen.setup(resolution, Screen::Orientation::BOTTOM);
 
       event_mgr.setup();
 
       if (config_err) {
-        msg_viewer.show(MsgViewer::ALERT, false, true, "Configuration Problem!",
+        msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Configuration Problem!",
           "Unable to read/save configuration file. Entering Deep Sleep. Press a key to restart."
         );
         sleep(10);
@@ -194,7 +189,7 @@
       app_controller.start();
     }
     else {
-      msg_viewer.show(MsgViewer::ALERT, false, true, "Font Loading Problem!",
+      msg_viewer.show(MsgViewer::Severity::ALERT, false, true, "Font Loading Problem!",
         "Unable to load default fonts."
       );
 

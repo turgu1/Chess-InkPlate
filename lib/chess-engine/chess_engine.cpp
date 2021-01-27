@@ -260,22 +260,22 @@ void ChessTask::exec()
             (chess_engine.is_white_fig(f) && !pos[pos_idx].white_move)) continue;
 
         if (f == PAWN) {
-          if ((row[board_idx] < 7) && (board[board_idx - 8] == NO_FIG)) add_one_step(board_idx, board_idx - 8);
-          if ((row[board_idx] == 2) && (board[board_idx - 8] == NO_FIG) && (board[board_idx - 16] == NO_FIG)) add_one_step(board_idx, board_idx - 16);
-          if (row[board_idx] == 7) {
+          if ((ChessEngine::row[board_idx] < 7) && (board[board_idx - 8] == NO_FIG)) add_one_step(board_idx, board_idx - 8);
+          if ((ChessEngine::row[board_idx] == 2) && (board[board_idx - 8] == NO_FIG) && (board[board_idx - 16] == NO_FIG)) add_one_step(board_idx, board_idx - 16);
+          if (ChessEngine::row[board_idx] == 7) {
             if (board[board_idx - 8] == NO_FIG) { // No piece on front on last row
               add_one_step(board_idx, board_idx - 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx - 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx - 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
               add_one_step(board_idx, board_idx - 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_QUEEN;
             }
-            if ((column[board_idx] > 1) && chess_engine.is_black_fig(board[board_idx - 9])) { // A piece can be taken on last row to the left
+            if ((ChessEngine::column[board_idx] > 1) && chess_engine.is_black_fig(board[board_idx - 9])) { // A piece can be taken on last row to the left
               add_one_step(board_idx, board_idx - 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx - 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx - 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
               add_one_step(board_idx, board_idx - 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_QUEEN;
             }
-            if ((column[board_idx] < 8) && chess_engine.is_black_fig(board[board_idx - 7])) { // A piece can be taken on last row to the right
+            if ((ChessEngine::column[board_idx] < 8) && chess_engine.is_black_fig(board[board_idx - 7])) { // A piece can be taken on last row to the right
               add_one_step(board_idx, board_idx - 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx - 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx - 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
@@ -283,28 +283,28 @@ void ChessTask::exec()
             }
           } 
           else {
-            if ((column[board_idx] > 1) && chess_engine.is_black_fig(board[board_idx - 9])) add_one_step(board_idx, board_idx - 9);
-            if ((column[board_idx] < 8) && chess_engine.is_black_fig(board[board_idx - 7])) add_one_step(board_idx, board_idx - 7);
+            if ((ChessEngine::column[board_idx] > 1) && chess_engine.is_black_fig(board[board_idx - 9])) add_one_step(board_idx, board_idx - 9);
+            if ((ChessEngine::column[board_idx] < 8) && chess_engine.is_black_fig(board[board_idx - 7])) add_one_step(board_idx, board_idx - 7);
           }
         } 
         else if (f == -PAWN) {
 
-          if ((row[board_idx] > 2) && (board[board_idx + 8] == NO_FIG)) add_one_step(board_idx, board_idx + 8);
-          if ((row[board_idx] == 7) && (board[board_idx + 8] == NO_FIG) && (board[board_idx + 16] == NO_FIG)) add_one_step(board_idx, board_idx + 16);
-          if (row[board_idx] == 2) {
+          if ((ChessEngine::row[board_idx] > 2) && (board[board_idx + 8] == NO_FIG)) add_one_step(board_idx, board_idx + 8);
+          if ((ChessEngine::row[board_idx] == 7) && (board[board_idx + 8] == NO_FIG) && (board[board_idx + 16] == NO_FIG)) add_one_step(board_idx, board_idx + 16);
+          if (ChessEngine::row[board_idx] == 2) {
             if (board[board_idx + 8] == NO_FIG) {
               add_one_step(board_idx, board_idx + 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx + 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx + 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
               add_one_step(board_idx, board_idx + 8); steps[steps_count - 1].type = MoveType::PROMOTE_TO_QUEEN;
             }
-            if ((column[board_idx] > 1) && chess_engine.is_white_fig(board[board_idx + 7])) {
+            if ((ChessEngine::column[board_idx] > 1) && chess_engine.is_white_fig(board[board_idx + 7])) {
               add_one_step(board_idx, board_idx + 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx + 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx + 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
               add_one_step(board_idx, board_idx + 7); steps[steps_count - 1].type = MoveType::PROMOTE_TO_QUEEN;
             }
-            if ((column[board_idx] < 8) && chess_engine.is_white_fig(board[board_idx + 9])) {
+            if ((ChessEngine::column[board_idx] < 8) && chess_engine.is_white_fig(board[board_idx + 9])) {
               add_one_step(board_idx, board_idx + 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_KNIGHT;
               add_one_step(board_idx, board_idx + 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_BISHOP;
               add_one_step(board_idx, board_idx + 9); steps[steps_count - 1].type = MoveType::PROMOTE_TO_ROOK;
@@ -312,8 +312,8 @@ void ChessTask::exec()
             }
           } 
           else {
-            if ((column[board_idx] > 1) && chess_engine.is_white_fig(board[board_idx + 7])) add_one_step(board_idx, board_idx + 7);
-            if ((column[board_idx] < 8) && chess_engine.is_white_fig(board[board_idx + 9])) add_one_step(board_idx, board_idx + 9);
+            if ((ChessEngine::column[board_idx] > 1) && chess_engine.is_white_fig(board[board_idx + 7])) add_one_step(board_idx, board_idx + 7);
+            if ((ChessEngine::column[board_idx] < 8) && chess_engine.is_white_fig(board[board_idx + 9])) add_one_step(board_idx, board_idx + 9);
           }
         } 
         else if (!endgame && (abs(f) == KING)) add_king_step(board_idx);
@@ -322,13 +322,13 @@ void ChessTask::exec()
       if ((pos[pos_idx].en_passant_pp != 0) && 
           (board[pos[pos_idx].en_passant_pp] == NO_FIG)) {
         if (pos[pos_idx].white_move) {
-          if ((column[pos[pos_idx].en_passant_pp] > 1) && 
+          if ((ChessEngine::column[pos[pos_idx].en_passant_pp] > 1) && 
               (board[pos[pos_idx].en_passant_pp + 7] == PAWN)) {
             add_one_step(pos[pos_idx].en_passant_pp + 7, pos[pos_idx].en_passant_pp);
             steps[steps_count - 1].type = MoveType::EN_PASSANT;
             steps[steps_count - 1].f2   = -PAWN;
           }
-          if ((column[pos[pos_idx].en_passant_pp] < 8) && 
+          if ((ChessEngine::column[pos[pos_idx].en_passant_pp] < 8) && 
               (board[pos[pos_idx].en_passant_pp + 9] == PAWN)) {
             add_one_step(pos[pos_idx].en_passant_pp + 9, pos[pos_idx].en_passant_pp);
             steps[steps_count - 1].type = MoveType::EN_PASSANT;
@@ -336,13 +336,13 @@ void ChessTask::exec()
           }
         } 
         else {
-          if ((column[pos[pos_idx].en_passant_pp] > 1) && 
+          if ((ChessEngine::column[pos[pos_idx].en_passant_pp] > 1) && 
               (board[pos[pos_idx].en_passant_pp - 9] == -PAWN)) {
             add_one_step(pos[pos_idx].en_passant_pp - 9, pos[pos_idx].en_passant_pp);
             steps[steps_count - 1].type = MoveType::EN_PASSANT;
             steps[steps_count - 1].f2   = PAWN;
           }
-          if ((column[pos[pos_idx].en_passant_pp] < 8) && 
+          if ((ChessEngine::column[pos[pos_idx].en_passant_pp] < 8) && 
               (board[pos[pos_idx].en_passant_pp - 7] == -PAWN)) {
             add_one_step(pos[pos_idx].en_passant_pp - 7, pos[pos_idx].en_passant_pp);
             steps[steps_count - 1].type = MoveType::EN_PASSANT;
@@ -1213,7 +1213,7 @@ ChessEngine::is_draw()
 }
 
 int 
-active(Step & step)  //
+ChessEngine::active(Step & step)
 {
   int j;
   if (step.f2 != NO_FIG || step.type > MoveType::CASTLE_QUEENSIDE) return 1;

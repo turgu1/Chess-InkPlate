@@ -26,7 +26,7 @@ CommonActions::power_off()
 {
   app_controller.going_to_deep_sleep();
   #if CHESS_INKPLATE_BUILD
-    msg_viewer.show(MsgViewer::INFO, false, true, "Power OFF",
+    msg_viewer.show(MsgViewer::Severity::INFO, false, true, "Power OFF",
       "Entering Deep Sleep mode. Please press a key to restart the device.");
     ESP::delay(500);
     inkplate_platform.deep_sleep();
@@ -39,11 +39,11 @@ void
 CommonActions::about()
 {
   msg_viewer.show(
-    MsgViewer::BOOK, 
+    MsgViewer::Severity::CHESS, 
     false,
     false,
     "About Chess-InkPlate", 
-    "A Simple Chess Player for the InkPlate devices Version %s for the InkPlate e-paper display devices. "
+    "A Simple Chess Player Version %s for the InkPlate e-paper display devices. "
     "This application was made by Guy Turcotte, Quebec, QC, Canada, "
     "with great support from e-Radionica.",
     APP_VERSION);

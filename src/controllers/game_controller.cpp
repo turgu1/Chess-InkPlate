@@ -10,6 +10,8 @@
 #include "viewers/page.hpp"
 #include "viewers/msg_viewer.hpp"
 
+#include "chess_engine_steps.hpp"
+
 #if EPUB_INKPLATE_BUILD
   #include "nvs.h"
 #endif
@@ -136,6 +138,7 @@ GameController::new_game(bool user_play_white)
 
   chess_engine.load_board_from_fen(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+    // "8/4P3/8/8/5k2/7K/8/4r3 w KQkq -"
     // "8/8/8/8/5k2/7K/8/4r3 w KQkq -"
   );
 
@@ -166,7 +169,10 @@ GameController::engine_play()
   for (int i = 0; i < MAXEPD; i++) best_move[i].c1 = -1;
 
   pos[0].best.c1 = -1;
+  
+  event_mgr.set_stay_on(true);
   chess_engine.solve_step();
+  event_mgr.set_stay_on(false);
 
   if (pos[0].best.c1 != -1) {
     for (int i = 0; i < pos[0].steps_count; i++) {
@@ -225,21 +231,10 @@ GameController::engine_play()
 }
 
 void
-GameController::play(Pos pos_from, Pos pos_to)
+GameController::complete_move(bool async)
 {
   Position * pos       = chess_engine.get_pos(0);
   Step     * best_move = chess_engine.get_best_move(0);
-
-  int8_t f1, f2;
-  int8_t c1, c2;
-
-  c1 = (((7 - pos_from.y) * 8) + pos_from.x);
-  c2 = (((7 - pos_to.y  ) * 8) + pos_to.x  );
-
-  f1 = (*game_board)[c1];
-  f2 = (*game_board)[c2];
-
-  // std::cout << "=====> f1:" << +f1 << " f2:" << +f2 << " c1:" << +c1 << " c2:" << +c2 << std::endl;
 
   pos[0].white_move = game_play_white;
   chess_engine.generate_steps(0);
@@ -253,14 +248,27 @@ GameController::play(Pos pos_from, Pos pos_to)
   //   std::cout << "---> f1:" << +s->f1 << " f2:" << +s->f2 << " c1:" << +s->c1 << " c2:" << +s->c2 << std::endl;
   // }
 
-  for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
-    Step * s = &pos[0].steps[step_idx];
-    if ((s->c1 == c1) && (s->c2 == c2)) {
-      found = true;
-      break;
+  if (async) {
+    for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
+      Step * s = &pos[0].steps[step_idx];
+      if ((s->c1 == game_steps[game_play_number].c1) && 
+          (s->c2 == game_steps[game_play_number].c2) && 
+          (s->type == promotion_move_type)) {
+        found = true;
+        break;
+      }
     }
   }
-
+  else {
+    for (step_idx = 0; step_idx < pos[0].steps_count; step_idx++) {
+      Step * s = &pos[0].steps[step_idx];
+      if ((s->c1 == game_steps[game_play_number].c1) && 
+          (s->c2 == game_steps[game_play_number].c2)) {
+        found = true;
+        break;
+      }
+    }
+  }
 
   // best_move[0].c1 = -1;
   // chess_engine.getbm(0, s.str());
@@ -308,12 +316,46 @@ GameController::play(Pos pos_from, Pos pos_to)
 
       game_play_number++;
 
-      engine_play();
+      engine_play();  
     }
   } 
   else {
     msg = "Move is illegal. Please retry.";
   }
+
+  from_pos   = Pos(-1, -1);
+  cursor_pos = game_play_white ? Pos(3, 3) : Pos(4, 4);
+
+  if (msg.empty()) msg = "User play. Please make a move:";
+
+  board_viewer.show_board(
+    game_play_white, cursor_pos, from_pos, 
+    game_steps, game_play_number, 
+    msg);
+}
+
+void
+GameController::play(Pos pos_from, Pos pos_to)
+{
+  Position * pos       = chess_engine.get_pos(0);
+
+  game_steps[game_play_number].c1 = (((7 - pos_from.y) * 8) + pos_from.x);
+  game_steps[game_play_number].c2 = (((7 - pos_to.y  ) * 8) + pos_to.x  );
+
+  game_steps[game_play_number].f1 = (*game_board)[game_steps[game_play_number].c1];
+  game_steps[game_play_number].f2 = (*game_board)[game_steps[game_play_number].c2];
+
+  if ((abs(game_steps[game_play_number].f1) == PAWN) &&
+      (( pos[0].white_move && (ChessEngine::row[game_steps[game_play_number].c2] == 8)) ||
+       (!pos[0].white_move && (ChessEngine::row[game_steps[game_play_number].c2] == 1)))) {
+    complete_user_move = true;
+    app_controller.set_controller(AppController::Ctrl::PROMOTION);
+  }
+  else {
+    complete_move(false);
+  }
+
+  // std::cout << "=====> f1:" << +f1 << " f2:" << +f2 << " c1:" << +c1 << " c2:" << +c2 << std::endl;
 }
 
 void 
@@ -329,13 +371,19 @@ GameController::enter()
     }
   }
   
-  if (msg.empty()) msg = "User play. Please make a move:";
+  if (complete_user_move) {
+    complete_user_move = false;
+    complete_move(true);
+  }
+  else {
+    if (msg.empty()) msg = "User play. Please make a move:";
 
-  board_viewer.show_board(
-    game_play_white, 
-    cursor_pos, from_pos, 
-    game_steps, game_play_number,
-    msg);
+    board_viewer.show_board(
+      game_play_white, 
+      cursor_pos, from_pos, 
+      game_steps, game_play_number,
+      msg);
+  }
 }
 
 void 
@@ -408,15 +456,6 @@ GameController::key_event(EventMgr::KeyEvent key)
         }
         else {
           play(from_pos, cursor_pos);
-          from_pos = null_pos;
-          cursor_pos = game_play_white ? Pos(3, 3) : Pos(4, 4);
-
-          if (msg.empty()) msg = "User play. Please make a move:";
-
-          board_viewer.show_board(
-            game_play_white, cursor_pos, from_pos, 
-            game_steps, game_play_number, 
-            msg);
         }
       }
       break;

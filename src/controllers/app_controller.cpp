@@ -54,7 +54,7 @@ void AppController::launch()
   if (((the_ctrl == Ctrl::LAST) && (last_ctrl[0] != current_ctrl)) || (the_ctrl != current_ctrl)) {
 
     switch (current_ctrl) {
-      case Ctrl::BOARD:         game_controller.leave(); break;
+      case Ctrl::BOARD:          game_controller.leave(); break;
       case Ctrl::OPTION:       option_controller.leave(); break;
       case Ctrl::PROMOTION: promotion_controller.leave(); break;
       case Ctrl::NONE:
@@ -74,7 +74,7 @@ void AppController::launch()
     }
 
     switch (current_ctrl) {
-      case Ctrl::BOARD:         game_controller.enter(); break;
+      case Ctrl::BOARD:          game_controller.enter(); break;
       case Ctrl::OPTION:       option_controller.enter(); break;
       case Ctrl::PROMOTION: promotion_controller.enter(); break;
       case Ctrl::NONE:
@@ -89,7 +89,7 @@ AppController::key_event(EventMgr::KeyEvent key)
   if (next_ctrl != Ctrl::NONE) launch();
 
   switch (current_ctrl) {
-    case Ctrl::BOARD:         game_controller.key_event(key); break;
+    case Ctrl::BOARD:          game_controller.key_event(key); break;
     case Ctrl::OPTION:       option_controller.key_event(key); break;
     case Ctrl::PROMOTION: promotion_controller.key_event(key); break;
     case Ctrl::NONE:
@@ -103,7 +103,7 @@ AppController::going_to_deep_sleep()
   if (next_ctrl != Ctrl::NONE) launch();
 
   switch (current_ctrl) {
-    case Ctrl::BOARD:      game_controller.leave(true); break;
+    case Ctrl::BOARD:       game_controller.leave(true); break;
     case Ctrl::OPTION:    option_controller.leave(true); break;
     case Ctrl::PROMOTION: option_controller.leave(true); break;
     case Ctrl::NONE:

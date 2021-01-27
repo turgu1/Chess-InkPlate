@@ -708,20 +708,20 @@ wifi_stop()
 bool
 start_web_server()
 {
-  msg_viewer.show(MsgViewer::WIFI, false, true, 
+  msg_viewer.show(MsgViewer::Severity::WIFI, false, true, 
     "Web Server Starting", 
     "The Web server is now establishing the connexion with the WiFi router. Please wait.");
 
   if (wifi_start()) {
     EventBits_t bits = xEventGroupGetBits(wifi_event_group);
     if (bits & WIFI_CONNECTED_BIT) {
-      msg_viewer.show(MsgViewer::WIFI, true, true, 
+      msg_viewer.show(MsgViewer::Severity::WIFI, true, true, 
         "Web Server", 
         "The Web server is now running at ip " IPSTR ". To stop it, please press a key.", IP2STR(&ip_address));
       return http_server_start() == ESP_OK;
     }
     else {
-      msg_viewer.show(MsgViewer::ALERT, true, true, 
+      msg_viewer.show(MsgViewer::Severity::ALERT, true, true, 
         "Web Server Failed", 
         "The Web server was not able to start. Correct the situation and try again.", IP2STR(&ip_address));
     }

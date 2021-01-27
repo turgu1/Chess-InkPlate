@@ -23,6 +23,7 @@
   // #include "freertos/semphr.h"
 #endif
 
+#include "chess_engine.hpp"
 #include "chess_engine_types.hpp"
 
 class ChessTask 
@@ -78,6 +79,10 @@ class ChessEngine
                halt(false),
             endgame(false) { }
 
+
+    static const uint8_t    row[64];
+    static const uint8_t column[64];
+
     void                      setup(int32_t time);
 
     void                   new_game() { end_of_game = EndOfGameType::NONE; }
@@ -125,6 +130,7 @@ class ChessEngine
     bool        checkd_w();
     bool        checkd_b();
     bool     draw_repeat(int pos_idx);
+    int           active(Step & step);
     int       quiescence(int pos_idx, int alpha, int beta, int depth_left);
     int       alpha_beta(int pos_idx, int alpha, int beta, int depth_left);
     int         evaluate(int pos_idx);
