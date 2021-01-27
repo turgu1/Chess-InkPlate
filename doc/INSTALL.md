@@ -85,7 +85,7 @@ Hard resetting via RTS pin...
 $ 
 ```
 
-Once the upload is complete, the device will automatically reboot. The first task done would be the page location computation for all books present in the SD-Card `books` folder. This is a relatively long process that will take between 1 and 3 minutes per book. The duration depends on book size and the SD-Card access speed. Once the computation is completed, the application will show the list of books present on the device, allowing the user to select a book to read.
+Once the upload is complete, the device will automatically reboot. IF everything is ok, it will present the chess board, ready to play a game.
 
 Some options on the esptool command may have to be modified depending on your computer:
 
