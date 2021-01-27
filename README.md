@@ -161,10 +161,9 @@ The following elements have been done (No need to do it again):
   - Depending on the language to be used (My own choice is Latin-1 (CP850)), select the appropriate Code Page for filenames. Select `Component config` > `FAT Filesystem support` > `OEM Code Page...`. DO NOT use Dynamic as it will add ~480KB to the application!!
   - Also select `Component config` > `FAT Filesystem support` > `API character encoding` > `... UTF-8 ...`
 
-- **HTTP Server**: The application is supplying a Web server (through the use of HTTP) to the user to modify the list of games present on the SDCard. The following parameters must be adjusted:
+- **HTTP Server**: (This is a feature to be made available in version 2.0) The application is supplying a Web server (through the use of HTTP) to the user to modify the list of games present on the SDCard. The following parameters must be adjusted:
   - Select `Component config` > `HTTP Server` > `Max HTTP Request Header Length` > 1024
   - Select `Component config` > `HTTP Server` > `Max HTTP URI Length` > 1024
-(This is a feature to be made available in version 2.0)
 
 The following is not configured through *menuconfig:*
 
