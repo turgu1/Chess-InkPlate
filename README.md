@@ -4,7 +4,7 @@
 
 (Updated 2021.01.26)
 
-This is a simple chess application for the InkPlate devices. It is based on the chess engine developped by Sergey Urusov as an Arduino project. I edited and ported the engine for inclusion under the ESP-IDF framework. You can find Sergey's original code [here](https://www.hackster.io/Sergey_Urusov).
+This is a simple chess application for the InkPlate devices. It is based on the chess engine developed by Sergey Urusov as an Arduino project. I edited and ported the engine for inclusion under the ESP-IDF framework. You can find Sergey's original code [here](https://www.hackster.io/Sergey_Urusov).
 
 <img src="doc/pictures/IMG_1428.JPG" alt="picture" width="800"/>
 
