@@ -41,6 +41,8 @@ GameController::load()
     return false;
   }
 
+  bool done = false;
+
   for (;;) {
     if (file.read(reinterpret_cast<char *>(&version), 1).fail()) break;
     if (version != SAVED_GAME_FILE_VERSION) break;
@@ -52,19 +54,19 @@ GameController::load()
       if (file.read(reinterpret_cast<char *>(&game_steps[i]), sizeof(Step)).fail()) break;
     }
 
+    done = true;
     break;
   }
 
-  bool res = !file.fail();
   file.close();
 
-  LOG_D("Saved game load %s.", res ? "Success" : "Error");
+  LOG_D("Saved game load %s.", done ? "Success" : "Error");
 
-  if (res) {
+  if (done) {
     game_play_number = step_count;
   }  
 
-  return res;
+  return done;
 }
 
 void 

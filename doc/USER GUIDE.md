@@ -1,4 +1,4 @@
-# Chess-InkPlate - User's Guide - Version 1.0.0
+# Chess-InkPlate - User's Guide - Version 1.1.0
 
 The Chess-InkPlate is a simple chess player application built specifically for the InkPlate ESP32 based devices.
 

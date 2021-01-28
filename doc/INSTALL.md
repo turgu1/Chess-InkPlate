@@ -89,6 +89,6 @@ Once the upload is complete, the device will automatically reboot. IF everything
 
 Some options on the esptool command may have to be modified depending on your computer:
 
-- The USB device connected to the InkPlate is expected to be named `/dev/ttyUSB0` (That is the case on Linux Mint and Ubuntu) on Linux and MacOs, or `COM3` on MS Windows. If it's not the case, you must find it and modify the `upload.sh` script for Linux and MacOS, or `upload.bat` in MS Windows. 
+- The USB device connected to the InkPlate is expected to be named `/dev/ttyUSB0` (That is the case on Linux Mint and Ubuntu) on Linux and MacOs, or `COM3` on MS Windows. If it's not the case, you must find it and modify the `upload.sh` script for Linux and MacOS, or `upload.bat` for MS Windows. 
 
 - Another issue you may have is the download speed that is too high for your computer. Again, you may change it in the `upload.sh` script (or `upload.bat`). The speed (baud rate) is **230400** in the file. You can change it to **115200** baud or lower.
