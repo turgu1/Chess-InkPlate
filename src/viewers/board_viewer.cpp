@@ -147,7 +147,7 @@ BoardViewer::show_board(bool        play_white,
   Page::Format fmt = {
     .line_height_factor =   1.0,
     .font_index         =     0,
-    .font_size          =    24,
+    .font_size          = CHESS_BOARD_FONT_SIZE,
     .indent             =     0,
     .margin_left        =     0,
     .margin_right       =     5,
@@ -168,6 +168,9 @@ BoardViewer::show_board(bool        play_white,
 
   fmt.font_index = font_index;
 
+  TTF * font = fonts.get(font_index);
+  int16_t chess_cell_height = font->get_em_height(CHESS_BOARD_FONT_SIZE);
+
   page.set_compute_mode(Page::ComputeMode::DISPLAY);
   page.start(fmt);
 
@@ -180,11 +183,14 @@ BoardViewer::show_board(bool        play_white,
 
   if (!msg.empty()) {
     fmt.font_index =  1;
-    fmt.font_size  = 12;
+    fmt.font_size  = CHESS_STEPS_FONT_SIZE;
+
+    TTF * font = fonts.get(1);
+    
 
     Pos pos;
     pos.x = fmt.margin_left + fmt.screen_left + dim.width;
-    pos.y = fmt.margin_top  + fmt.screen_top  + 30;
+    pos.y = fmt.margin_top  + fmt.screen_top  + (chess_cell_height / 5) + font->get_em_height(CHESS_STEPS_FONT_SIZE);
 
     page.put_str_at(msg, pos, fmt);
   }
@@ -206,7 +212,7 @@ BoardViewer::show_board(bool        play_white,
     }
 
     fmt.font_index  =  1;
-    fmt.font_size   = 10;
+    fmt.font_size   = CHESS_STEPS_FONT_SIZE;
     fmt.margin_left =  5 + (9 * dim.width ) + 15;
     fmt.margin_top  =  6 +      dim.height  - 20;
 

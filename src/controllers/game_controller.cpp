@@ -341,6 +341,8 @@ GameController::play(Pos pos_from, Pos pos_to)
 {
   Position * pos       = chess_engine.get_pos(0);
 
+  game_started = true;
+  
   game_steps[game_play_number].c1 = (((7 - pos_from.y) * 8) + pos_from.x);
   game_steps[game_play_number].c2 = (((7 - pos_to.y  ) * 8) + pos_to.x  );
 
@@ -350,6 +352,8 @@ GameController::play(Pos pos_from, Pos pos_to)
   if ((abs(game_steps[game_play_number].f1) == PAWN) &&
       (( pos[0].white_move && (ChessEngine::row[game_steps[game_play_number].c2] == 8)) ||
        (!pos[0].white_move && (ChessEngine::row[game_steps[game_play_number].c2] == 1)))) {
+    // This is a pawn promotion move to the last board row. The following will display
+    // a promotino selection menu that will trigger, on return, the complete_move method.
     complete_user_move = true;
     app_controller.set_controller(AppController::Ctrl::PROMOTION);
   }
@@ -366,6 +370,7 @@ GameController::enter()
   if (!game_started) {
     if (load()) {
       replay();
+      game_started = true;
     }
     else {
       new_game(game_play_white);

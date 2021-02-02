@@ -34,12 +34,12 @@ class GameController
     static constexpr char const * TAG = "GameController";
     static constexpr uint8_t      SAVED_GAME_FILE_VERSION = 1;
 
-    std::string  msg;
+    std::string  msg;                // Message to show on top of the board
 
-    bool         game_started;
-    Pos          cursor_pos;
-    Pos          from_pos;
-    Step         game_steps[1000];
+    bool         game_started;       // True of the game is ongoing  
+    Pos          cursor_pos;         // Cursor position on the chess board
+    Pos          from_pos;           // Piece position from which a move will be done
+    Step         game_steps[1000];   // Each step of the game
     Step       * best_move;
     Position     game_pos;
     int16_t      game_play_number;

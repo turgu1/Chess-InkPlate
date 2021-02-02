@@ -1337,7 +1337,9 @@ ChessEngine::quiescence(int pos_idx, int alpha, int beta, int depth_left)
   if (score == -20000) {
     if (pos[pos_idx].check_on_table) {
       score = -10000 + pos_idx;
-      pos[pos_idx - 1].steps[pos[pos_idx - 1].cur_step].check = CheckType::CHECKMATE;
+      if (pos_idx > 0) {
+        pos[pos_idx - 1].steps[pos[pos_idx - 1].cur_step].check = CheckType::CHECKMATE;
+      }
     }
   }
   return score;
