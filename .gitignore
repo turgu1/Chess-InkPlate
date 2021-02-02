@@ -11,3 +11,4 @@ freetype-2.10.4/objs
 bin/*.bin
 SDCard/current_game.save
 temp
+doc/*.pdf
