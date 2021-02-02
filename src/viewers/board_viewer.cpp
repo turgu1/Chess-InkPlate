@@ -183,7 +183,7 @@ BoardViewer::show_board(bool        play_white,
 
   if (!msg.empty()) {
     fmt.font_index =  1;
-    fmt.font_size  = CHESS_STEPS_FONT_SIZE;
+    fmt.font_size  = CHESS_MSGS_FONT_SIZE;
 
     TTF * font = fonts.get(1);
     

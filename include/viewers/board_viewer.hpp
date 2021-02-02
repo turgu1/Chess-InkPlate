@@ -27,9 +27,11 @@ class BoardViewer
     #ifdef INKPLATE_10
       static constexpr int8_t CHESS_BOARD_FONT_SIZE = 36;
       static constexpr int8_t CHESS_STEPS_FONT_SIZE = 16;
+      static constexpr int8_t CHESS_MSGS_FONT_SIZE  = 16;
     #else
       static constexpr int8_t CHESS_BOARD_FONT_SIZE = 24;
-      static constexpr int8_t CHESS_STEPS_FONT_SIZE = 12;
+      static constexpr int8_t CHESS_STEPS_FONT_SIZE = 10;
+      static constexpr int8_t CHESS_MSGS_FONT_SIZE  = 12;
     #endif
 
   public:
