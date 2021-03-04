@@ -412,7 +412,11 @@ GameController::key_event(EventMgr::KeyEvent key)
         msg);
       break;
 
-    case EventMgr::KeyEvent::DBL_PREV:
+    #if EXTENDED_CASE
+      case EventMgr::KeyEvent::DBL_NEXT:
+    #else
+      case EventMgr::KeyEvent::DBL_PREV:
+    #endif
       if (game_play_white) cursor_pos.y = (cursor_pos.y == 0) ? 7 : cursor_pos.y - 1;
       else                 cursor_pos.y = (cursor_pos.y == 7) ? 0 : cursor_pos.y + 1;
       board_viewer.show_board(
@@ -430,7 +434,11 @@ GameController::key_event(EventMgr::KeyEvent key)
         msg);
       break;
 
-    case EventMgr::KeyEvent::DBL_NEXT:
+    #if EXTENDED_CASE
+      case EventMgr::KeyEvent::DBL_PREV:
+    #else
+      case EventMgr::KeyEvent::DBL_NEXT:
+    #endif
       if (game_play_white) cursor_pos.y = (cursor_pos.y == 7) ? 0 : cursor_pos.y + 1;
       else                 cursor_pos.y = (cursor_pos.y == 0) ? 7 : cursor_pos.y - 1;
       board_viewer.show_board(

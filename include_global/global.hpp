@@ -11,7 +11,7 @@
 
 #include "strlcpy.hpp"
 
-#define APP_VERSION "1.1.0"
+#define APP_VERSION "1.2.0"
 
 #if !(defined(CHESS_LINUX_BUILD) || defined(CHESS_INKPLATE_BUILD)) 
   #error "BUILD_TYPE Not Set."

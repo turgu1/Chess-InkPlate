@@ -12,3 +12,5 @@ bin/*.bin
 SDCard/current_game.save
 temp
 doc/*.pdf
+*.zip
+
